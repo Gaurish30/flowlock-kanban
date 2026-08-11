@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowLock — My Projects</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/landing.css" />
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/projects.css" />
+</head>
+<body class="app-body">
+
+  <div class="dark-bg-animated"></div>
+
+  <!-- Header Navbar -->
+  <header class="app-header">
+    <div class="header-left">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">🔒</span>
+        <span class="brand-name">FlowLock</span>
+      </a>
+      <span class="divider-vertical"></span>
+      <span class="header-page-title">Project Portfolio</span>
+    </div>
+
+    <div class="header-right">
+      <div class="user-profile">
+        <span class="avatar-circle" id="user-avatar">U</span>
+        <span id="user-name-display" class="user-name">User</span>
+      </div>
+      <button id="btn-projects-logout" class="btn btn-secondary btn-pill btn-sm">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Main Projects Hub -->
+  <main class="app-main">
+    
+    <!-- Top Summary Stat Cards -->
+    <div class="stats-overview-grid">
+      <div class="stat-card card-rounded">
+        <div class="stat-icon">📁</div>
+        <div>
+          <div class="stat-value" id="stat-total-projects">0</div>
+          <div class="stat-label">Total Projects</div>
+        </div>
+      </div>
+
+      <div class="stat-card card-rounded">
+        <div class="stat-icon">🔒</div>
+        <div>
+          <div class="stat-value text-warning" id="stat-active-blockers">0</div>
+          <div class="stat-label">Active Blocked Tasks</div>
+        </div>
+      </div>
+
+      <div class="stat-card card-rounded">
+        <div class="stat-icon">✅</div>
+        <div>
+          <div class="stat-value text-success" id="stat-completion-rate">0%</div>
+          <div class="stat-label">Overall Completion Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls & Filter Toolbar -->
+    <div class="portfolio-toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="project-search" class="form-input" placeholder="Search projects by name..." />
+        </div>
+
+        <div class="filter-pills">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="blocked">Blocked</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+      </div>
+
+      <button id="btn-new-project-hub" class="btn btn-primary btn-pill">+ New Project</button>
+    </div>
+
+    <!-- Projects Card Grid -->
+    <div class="projects-grid" id="projects-container">
+      <!-- Project cards injected dynamically -->
+    </div>
+
+  </main>
+
+  <!-- Modal: Create New Project -->
+  <div id="modal-new-project" class="modal-backdrop hidden">
+    <div class="modal-card card-rounded">
+      <div class="modal-header">
+        <h3>Create New Project</h3>
+        <button class="modal-close" id="close-project-modal">&times;</button>
+      </div>
+      <form id="form-hub-create-project">
+        <div class="form-group">
+          <label for="hub-project-title">Project Name</label>
+          <input type="text" id="hub-project-title" class="form-input" placeholder="e.g. Core API Auth Migration" required />
+        </div>
+
+        <div class="form-group">
+          <label for="hub-project-desc">Description</label>
+          <textarea id="hub-project-desc" class="form-input" rows="3" placeholder="What is the main goal of this dependency graph?"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary btn-pill" id="btn-cancel-hub-project">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-pill">Create & Launch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/projects.js"></script>
+</body>
+</html>

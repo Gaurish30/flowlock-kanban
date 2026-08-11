@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowLock — Workspace Dashboard</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/landing.css" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="app-body">
+
+  <div class="dark-bg-animated"></div>
+
+  <!-- App Header Navbar -->
+  <header class="app-header">
+    <div class="header-left">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">🔒</span>
+        <span class="brand-name">FlowLock</span>
+      </a>
+      <a href="projects.html" class="btn btn-secondary btn-pill btn-sm">← All Projects</a>
+      <span class="divider-vertical"></span>
+      <select id="board-selector" class="board-dropdown">
+        <!-- User Boards dynamically loaded here -->
+      </select>
+      <button id="btn-create-board" class="btn btn-secondary btn-pill btn-sm">+ New Project</button>
+    </div>
+
+    <div class="header-right">
+      <div class="user-profile">
+        <span class="avatar-circle" id="user-avatar">U</span>
+        <span id="user-name-display" class="user-name">User</span>
+      </div>
+      <button id="btn-app-logout" class="btn btn-secondary btn-pill btn-sm">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Layout -->
+  <main class="app-main">
+    
+    <!-- Workspace Subheader Actions -->
+    <div class="workspace-subnav">
+      <div class="board-info">
+        <h1 id="current-board-title">Payment Gateway Integration</h1>
+        <p id="current-board-desc">Track tasks and lock downstream dependencies automatically.</p>
+      </div>
+
+      <div class="view-toggles">
+        <button id="toggle-kanban" class="toggle-btn active">📋 Kanban View</button>
+        <button id="toggle-graph" class="toggle-btn">🕸 Dependency Graph View</button>
+        <button id="btn-add-task" class="btn btn-primary btn-pill">+ Create Task</button>
+      </div>
+    </div>
+
+    <!-- Alert / Banner Container for Dependency Blocks -->
+    <div id="dependency-alert" class="alert-banner hidden">
+      <span id="alert-text">⚠️ Task is currently locked by prerequisite dependencies.</span>
+    </div>
+
+    <!-- VIEW 1: KANBAN BOARD -->
+    <div id="kanban-view" class="view-panel active">
+      <div class="kanban-grid">
+        
+        <!-- Column: TO DO -->
+        <div class="kanban-column" data-status="todo">
+          <div class="column-header">
+            <h3>To Do</h3>
+            <span class="task-count" id="count-todo">0</span>
+          </div>
+          <div class="column-body" id="col-todo" data-status="todo">
+            <!-- Tasks rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Column: IN PROGRESS -->
+        <div class="kanban-column" data-status="in-progress">
+          <div class="column-header">
+            <h3>In Progress</h3>
+            <span class="task-count" id="count-in-progress">0</span>
+          </div>
+          <div class="column-body" id="col-in-progress" data-status="in-progress">
+            <!-- Tasks rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Column: IN REVIEW -->
+        <div class="kanban-column" data-status="review">
+          <div class="column-header">
+            <h3>In Review</h3>
+            <span class="task-count" id="count-review">0</span>
+          </div>
+          <div class="column-body" id="col-review" data-status="review">
+            <!-- Tasks rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Column: DONE -->
+        <div class="kanban-column" data-status="done">
+          <div class="column-header">
+            <h3>Done</h3>
+            <span class="task-count" id="count-done">0</span>
+          </div>
+          <div class="column-body" id="col-done" data-status="done">
+            <!-- Tasks rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW 2: VISUAL DEPENDENCY GRAPH -->
+    <div id="graph-view" class="view-panel">
+      <div class="graph-card card-rounded">
+        <div class="graph-canvas-container" id="graph-canvas-container">
+          <svg id="dependency-svg" class="dependency-svg"></svg>
+          <div id="graph-nodes-layer" class="graph-nodes-layer"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL 1: CREATE TASK -->
+  <div id="modal-task" class="modal-backdrop hidden">
+    <div class="modal-card card-rounded">
+      <div class="modal-header">
+        <h3>Create New Task</h3>
+        <button class="modal-close" id="close-task-modal">&times;</button>
+      </div>
+      <form id="form-create-task">
+        <div class="form-group">
+          <label for="task-title">Task Title</label>
+          <input type="text" id="task-title" class="form-input" placeholder="e.g. Implement OAuth Endpoint" required />
+        </div>
+
+        <div class="form-group">
+          <label for="task-desc">Description</label>
+          <textarea id="task-desc" class="form-input" rows="3" placeholder="Brief details about this work unit..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="task-dependencies">Blocker Tasks (Dependencies)</label>
+          <p class="field-hint">This task cannot be completed until selected prerequisite tasks are "Done".</p>
+          <select id="task-dependencies" class="form-input" multiple style="height: 90px;">
+            <!-- Populated dynamically with active project tasks -->
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary btn-pill" id="btn-cancel-task">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-pill">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: NEW PROJECT -->
+  <div id="modal-board" class="modal-backdrop hidden">
+    <div class="modal-card card-rounded">
+      <div class="modal-header">
+        <h3>Create New Project Board</h3>
+        <button class="modal-close" id="close-board-modal">&times;</button>
+      </div>
+      <form id="form-create-board">
+        <div class="form-group">
+          <label for="board-title">Project Title</label>
+          <input type="text" id="board-title" class="form-input" placeholder="e.g. Mobile App Auth Refactor" required />
+        </div>
+
+        <div class="form-group">
+          <label for="board-desc">Description</label>
+          <input type="text" id="board-desc" class="form-input" placeholder="e.g. Spring 2026 Sprint" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary btn-pill" id="btn-cancel-board">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-pill">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

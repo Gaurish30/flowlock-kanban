@@ -1,0 +1,558 @@
+/* ==========================================================================
+   1. DESIGN TOKENS (CSS Custom Properties)
+   ========================================================================== */
+:root {
+  /* Dark Ambient Palette */
+  --bg-dark-base: #0B0F17;
+  --bg-surface: rgba(18, 24, 38, 0.75);
+  --bg-surface-subtle: rgba(28, 36, 56, 0.6);
+  --bg-glass: rgba(15, 23, 42, 0.85);
+
+  /* Text & Hierarchy */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
+  --text-on-primary: #FFFFFF;
+
+  /* Borders & Accents */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.22);
+  --primary: #818CF8;
+  --primary-hover: #93C5FD;
+  --primary-light: rgba(99, 102, 241, 0.15);
+  --primary-border: rgba(129, 140, 248, 0.3);
+
+  /* Status Colors */
+  --success: #34D399;
+  --success-light: rgba(16, 185, 129, 0.15);
+  --warning: #FBBF24;
+  --warning-light: rgba(245, 158, 11, 0.15);
+  --danger: #F87171;
+  --danger-light: rgba(239, 68, 68, 0.15);
+
+  /* Radii & Shadows */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 40px -4px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 25px rgba(129, 140, 248, 0.35);
+
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-bounce: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================================================
+   2. GLOBAL BASE, CURSORS & ANIMATED DARK BACKGROUND
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark-base);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+  /* Custom Default Pointer Cursor */
+  cursor: default;
+}
+
+/* Cursor States for Interactive Elements */
+a, button, .btn, .faq-item, .mock-card, .brand, .preview-pill {
+  cursor: pointer;
+}
+
+input, textarea {
+  cursor: text;
+}
+
+/* Moving Mesh Background */
+.dark-bg-animated {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.18), transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(139, 92, 246, 0.15), transparent 40%),
+    radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.1), transparent 40%),
+    var(--bg-dark-base);
+  background-size: 200% 200%;
+  animation: moveGradient 18s ease infinite;
+}
+
+@keyframes moveGradient {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section-padding { padding: 96px 0; }
+
+/* ==========================================================================
+   3. NAVBAR HOVER & ACTIVE STATES
+   ========================================================================== */
+.navbar-wrapper {
+  position: fixed;
+  top: 20px; left: 0; right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  padding: 0 24px;
+}
+
+.navbar-glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 10px 24px;
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.navbar-glass:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  transition: transform var(--transition-bounce);
+}
+
+.brand:hover {
+  transform: scale(1.04);
+}
+
+.brand:active {
+  transform: scale(0.96);
+}
+
+.nav-links { display: flex; gap: 28px; }
+.nav-link {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  transition: color var(--transition-normal);
+}
+
+/* Subtle Link Underline Fill Effect on Hover */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background-color: var(--primary);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link:active {
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   4. BUTTON HOVER, PRESS & GLOW EFFECTS
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border: none;
+  user-select: none;
+  transition: 
+    transform var(--transition-bounce), 
+    background-color var(--transition-normal), 
+    box-shadow var(--transition-normal), 
+    border-color var(--transition-normal);
+}
+
+.btn-pill { border-radius: var(--radius-full); }
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #0B0F17;
+  box-shadow: 0 4px 18px rgba(129, 140, 248, 0.3);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 2px 8px rgba(129, 140, 248, 0.2);
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-surface-subtle);
+  border-color: var(--border-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px) scale(0.98);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.btn-lg { padding: 14px 28px; font-size: 1rem; }
+
+/* ==========================================================================
+   5. CARDS & HOVER ELEVATION
+   ========================================================================== */
+.card-rounded {
+  background: var(--bg-surface);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-md);
+  transition: 
+    transform var(--transition-bounce), 
+    border-color var(--transition-normal), 
+    box-shadow var(--transition-normal);
+}
+
+.feature-card:hover, .testimonial-card:hover, .card-comparison:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-lg);
+}
+
+.feature-card:active, .testimonial-card:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+.section-header {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 56px auto;
+}
+
+.section-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.comparison-grid, .features-grid, .testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+.features-grid { grid-template-columns: repeat(3, 1fr); }
+
+/* ==========================================================================
+   6. HERO SECTION & INTERACTIVE PREVIEW
+   ========================================================================== */
+.hero-section {
+  padding-top: 160px;
+  padding-bottom: 80px;
+  text-align: center;
+}
+.hero-container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-full);
+  font-size: 0.825rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  transition: transform var(--transition-bounce), border-color var(--transition-normal);
+}
+
+.badge-pill:hover {
+  transform: scale(1.05);
+  border-color: var(--primary);
+}
+
+.badge-dot { width: 7px; height: 7px; background-color: var(--primary); border-radius: 50%; }
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+.text-gradient {
+  background: linear-gradient(135deg, #A5B4FC 0%, #C084FC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 680px;
+  margin: 0 auto 36px auto;
+}
+.hero-actions { display: flex; justify-content: center; gap: 16px; margin-bottom: 64px; }
+
+/* Interactive Board Mock Card Hover Mechanics */
+.hero-preview-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  text-align: left;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-bounce);
+}
+
+.hero-preview-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 24px 48px -6px rgba(0, 0, 0, 0.7);
+  transform: translateY(-4px);
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg-surface-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.window-controls { display: flex; gap: 6px; }
+.dot { 
+  width: 10px; 
+  height: 10px; 
+  border-radius: 50%; 
+  transition: transform var(--transition-bounce), opacity var(--transition-fast);
+}
+.dot:hover { transform: scale(1.3); }
+.dot.red { background: var(--danger); }
+.dot.yellow { background: var(--warning); }
+.dot.green { background: var(--success); }
+
+.preview-title { font-size: 0.825rem; font-weight: 600; color: var(--text-secondary); }
+
+.preview-pill {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  transition: background-color var(--transition-fast), transform var(--transition-bounce);
+}
+
+.preview-pill:hover {
+  background: rgba(129, 140, 248, 0.3);
+  transform: scale(1.05);
+}
+
+.preview-board-mock {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 24px;
+}
+.mock-col { background: var(--bg-surface-subtle); padding: 16px; border-radius: var(--radius-lg); }
+.col-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Individual Mock Task Card Hover & Active Press */
+.mock-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 10px;
+  transition: 
+    transform var(--transition-bounce), 
+    border-color var(--transition-normal), 
+    box-shadow var(--transition-normal);
+}
+
+.mock-card:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.mock-card:active {
+  transform: scale(0.97);
+}
+
+.mock-card.locked { border-left: 4px solid var(--danger); }
+.mock-card.locked:hover { border-color: var(--danger); }
+
+.card-meta { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 8px; }
+.card-title { font-size: 0.9rem; font-weight: 600; }
+.card-blocker-alert {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--danger);
+  background: var(--danger-light);
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+}
+
+/* ==========================================================================
+   7. TRUST BAR & INTERACTIVE FAQ ACCORDION HOVERS
+   ========================================================================== */
+.trust-bar { text-align: center; padding: 36px 0; border-y: 1px solid var(--border-subtle); }
+.trust-label { font-size: 0.8rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 16px; }
+.trust-logos { display: flex; justify-content: center; gap: 32px; font-weight: 600; color: var(--text-secondary); }
+
+.trust-logos span {
+  transition: color var(--transition-normal), transform var(--transition-bounce);
+}
+.trust-logos span:hover {
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; text-align: center; }
+.stat-box {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  transition: transform var(--transition-bounce);
+}
+.stat-box:hover {
+  transform: scale(1.05);
+}
+.stat-number { font-size: 3rem; font-weight: 700; color: var(--primary); display: block; }
+.stat-label { font-size: 0.9rem; color: var(--text-secondary); }
+
+/* FAQ Interactive Hover & Active Items */
+.faq-list { display: flex; flex-direction: column; gap: 16px; }
+.faq-item {
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: 
+    background-color var(--transition-normal), 
+    border-color var(--transition-normal), 
+    transform var(--transition-bounce);
+}
+
+.faq-item:hover {
+  background-color: var(--bg-surface-subtle);
+  border-color: var(--border-hover);
+  transform: translateX(4px);
+}
+
+.faq-item:active {
+  transform: translateX(2px) scale(0.99);
+}
+
+.faq-item h4 { font-size: 1.05rem; margin-bottom: 6px; }
+.faq-item p { color: var(--text-secondary); font-size: 0.9rem; }
+
+/* Testimonials */
+.user-meta { margin-top: 16px; display: flex; flex-direction: column; font-size: 0.85rem; }
+.user-meta span { color: var(--text-secondary); }
+
+/* CTA Banner Hover */
+.cta-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+  border: 1px solid var(--primary-border);
+  text-align: center;
+  padding: 64px 32px;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.cta-banner:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Footer Links Hover */
+.footer { background: var(--bg-dark-base); border-top: 1px solid var(--border-subtle); padding: 48px 0 24px 0; }
+.footer-content { display: flex; justify-content: space-between; margin-bottom: 36px; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color var(--transition-fast), transform var(--transition-bounce);
+}
+
+.footer-links a:hover {
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.footer-links a:active {
+  transform: translateY(0);
+}
+
+.footer-bottom {
+  text-align: center;
+  font-size: 0.825rem;
+  color: var(--text-tertiary);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 24px;
+}
