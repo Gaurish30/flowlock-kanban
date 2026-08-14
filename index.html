@@ -1,365 +1,1751 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FlowLock — Dependency Management for Teams</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowLock - Dependency-Aware Graph Kanban</title>
+  
+  <!-- Lenis CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.18/dist/lenis.css">
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&family=Inter:wght@400;500;600;700;800&display=swap');
 
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/landing.css" />
+    :root {
+      --board-bg: #fcfaf4;
+      --graph-grid-line: #e3dec3;
+      --graph-accent-line: #d2c8a6;
+      --column-bg: rgba(238, 233, 216, 0.55);
+      
+      --header-bg: #2d221c;
+      --header-text: #f5ebe0;
+      --header-border: #42322a;
+      
+      --paper-yellow: #fff9c4;
+      --paper-pink: #ffecb3;
+      --paper-blue: #e1f5fe;
+      --paper-green: #e8f5e9;
+      --paper-kraft: #ebdcc9;
+      --paper-text: #2c221e;
+      
+      --pin-red: radial-gradient(circle at 35% 35%, #e63946, #80131d);
+      --pin-gold: radial-gradient(circle at 35% 35%, #ffd700, #997a00);
+      
+      --font-hand: 'Gloria Hallelujah', cursive, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--paper-text);
+      min-height: 100vh;
+      background-color: var(--board-bg);
+      background-image: 
+        linear-gradient(var(--graph-grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--graph-grid-line) 1px, transparent 1px),
+        linear-gradient(var(--graph-accent-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--graph-accent-line) 1px, transparent 1px);
+      background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+      background-position: -1px -1px;
+      overflow-x: hidden;
+    }
+
+    .site-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* --- SOFT WALNUT NAVBAR --- */
+    .landing-nav {
+      background: var(--header-bg);
+      padding: 12px 32px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 30px;
+      border-bottom: 3px solid var(--header-border);
+      border-radius: 0 0 24px 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: #d84315;
+      color: #fff;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-title {
+      font-family: var(--font-hand);
+      font-size: 1.45rem;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: #a89f91;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .nav-center-menu {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-link {
+      color: #d0c2b6;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .nav-right-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* --- SOFT BUTTONS --- */
+    .btn {
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 12px 22px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s, box-shadow 0.25s;
+      display: inline-block;
+    }
+
+    .btn-secondary { 
+      background: #3e2723; 
+      color: #f5ebe0; 
+      border: 1px solid #5a4539; 
+    }
+
+    .btn-accent { 
+      background: #d84315; 
+      color: #ffffff; 
+      box-shadow: 0 6px 18px rgba(216, 67, 21, 0.35); 
+    }
+
+    .btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      filter: brightness(1.1);
+      box-shadow: 0 10px 24px rgba(216, 67, 21, 0.45);
+    }
+
+    /* --- HERO SECTION --- */
+    .hero-section {
+      padding: 80px 0 60px;
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .hero-text h1 {
+      font-family: var(--font-hand);
+      font-size: 3.3rem;
+      line-height: 1.15;
+      color: #2c221e;
+      margin-bottom: 20px;
+    }
+
+    .hero-text p {
+      font-size: 1.1rem;
+      line-height: 1.65;
+      color: #5d4037;
+      margin-bottom: 28px;
+      font-weight: 500;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 16px;
+    }
+
+    .hero-board {
+      position: relative;
+      height: 440px;
+      background: var(--column-bg);
+      border: 2px dashed #c0b49d;
+      border-radius: 36px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.06), inset 0 0 20px rgba(0,0,0,0.02);
+      overflow: hidden;
+    }
+
+    .hero-graph-svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .graph-edge {
+      stroke: #8d6e63;
+      stroke-width: 2.5;
+      stroke-dasharray: 6 4;
+      animation: dashFlow 20s linear infinite;
+    }
+
+    .graph-edge-active {
+      stroke: #d84315;
+      stroke-dasharray: none;
+    }
+
+    .hero-node {
+      position: absolute;
+      padding: 16px 18px;
+      width: 175px;
+      background: var(--paper-yellow);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+      border-radius: 20px 6px 18px 8px;
+      font-size: 0.8rem;
+    }
+
+    .hero-node::before {
+      content: '';
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      background: var(--pin-red);
+      border-radius: 50%;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    .washi-tape {
+      position: absolute;
+      top: -10px;
+      right: 15px;
+      width: 45px;
+      height: 14px;
+      background: rgba(216, 67, 21, 0.2);
+      transform: rotate(4deg);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    .node-1 { top: 45px; left: 30px; transform: rotate(-3deg); border-radius: 18px 6px 22px 8px; }
+    .node-2 { top: 45px; right: 30px; background: var(--paper-pink); transform: rotate(4deg); border-radius: 8px 22px 6px 20px; }
+    .node-3 { bottom: 45px; left: 50%; transform: translateX(-50%) rotate(-1.5deg); background: var(--paper-blue); border-radius: 22px 18px 8px 24px; }
+    .node-3::before { background: var(--pin-gold); }
+
+    .node-tag {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .node-title {
+      font-family: var(--font-hand);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    /* --- SECTION HEADERS --- */
+    .section-header {
+      text-align: center;
+      margin: 100px 0 45px;
+    }
+
+    .section-header h2 {
+      font-family: var(--font-hand);
+      font-size: 2.7rem;
+      color: #2c221e;
+    }
+
+    .section-header p {
+      color: #6d594b;
+      font-size: 1.05rem;
+      margin-top: 6px;
+    }
+
+    /* --- COMPARISON SECTION --- */
+    .comparison-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 60px;
+    }
+
+    .comparison-card {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px dashed var(--graph-accent-line);
+      padding: 36px 30px;
+      border-radius: 28px 8px 24px 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.04);
+      transform: rotate(-0.5deg);
+    }
+
+    .comparison-card.highlight {
+      background: #ffffff;
+      border: 2px dashed #d84315;
+      border-radius: 12px 28px 10px 32px;
+      box-shadow: 0 14px 32px rgba(216, 67, 21, 0.12);
+      position: relative;
+      transform: rotate(0.8deg);
+    }
+
+    .comparison-card.highlight::before {
+      content: '★ DEPENDENCY-AWARE';
+      position: absolute;
+      top: -14px;
+      right: 24px;
+      background: #d84315;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(216, 67, 21, 0.3);
+    }
+
+    .comparison-card h3 {
+      font-family: var(--font-hand);
+      font-size: 1.65rem;
+      margin-bottom: 20px;
+    }
+
+    .comparison-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .comparison-list li {
+      font-size: 0.92rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    /* =========================================================
+       1. REDESIGNED INTERACTIVE DEPENDENCY ENGINE CANVAS
+       ========================================================= */
+    .engine-canvas-container {
+      background: var(--paper-kraft);
+      border: 2px dashed #8d6e63;
+      border-radius: 40px;
+      padding: 32px;
+      margin-bottom: 80px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+      position: relative;
+    }
+
+    .engine-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      padding: 12px 24px;
+      border-radius: 30px;
+      border: 1px solid #b5a293;
+      margin-bottom: 30px;
+    }
+
+    .engine-stage {
+      position: relative;
+      height: 380px;
+      background: rgba(252, 250, 244, 0.85);
+      border-radius: 28px;
+      border: 1px dashed var(--graph-accent-line);
+      overflow: hidden;
+    }
+
+    .engine-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .engine-edge-line {
+      stroke-width: 3;
+      transition: stroke 0.4s ease, stroke-dasharray 0.4s ease;
+    }
+
+    .engine-edge-locked {
+      stroke: #e57373;
+      stroke-dasharray: 6 4;
+      animation: dashFlow 15s linear infinite;
+    }
+
+    .engine-edge-unlocked {
+      stroke: #81c784;
+      stroke-dasharray: none;
+    }
+
+    .interactive-node {
+      position: absolute;
+      width: 220px;
+      padding: 18px;
+      background: var(--paper-yellow);
+      border-radius: 24px 8px 20px 10px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      user-select: none;
+    }
+
+    .interactive-node:hover {
+      transform: translateY(-4px) scale(1.02) !important;
+      box-shadow: 0 18px 36px rgba(0,0,0,0.14);
+    }
+
+    .interactive-node::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      background: var(--pin-red);
+      border-radius: 50%;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    .interactive-node.is-done {
+      background: var(--paper-green);
+    }
+
+    .interactive-node.is-locked {
+      background: #f0ece1;
+      border: 2px dashed #b0a898;
+      opacity: 0.85;
+    }
+
+    .interactive-node.is-ready {
+      background: var(--paper-blue);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 12px 28px rgba(0,0,0,0.08); }
+      50% { box-shadow: 0 12px 28px rgba(216, 67, 21, 0.25); }
+    }
+
+    .node-header-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Node Positions on Demo Stage */
+    #nodeA { top: 120px; left: 40px; transform: rotate(-2deg); }
+    #nodeB { top: 50px; right: 60px; transform: rotate(2deg); }
+    #nodeC { bottom: 40px; right: 60px; transform: rotate(-1deg); }
+
+    /* --- DUAL PERSPECTIVE SHAPES --- */
+    .dual-perspective-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 80px;
+    }
+
+    .perspective-box {
+      background: #ffffff;
+      border: 1px solid var(--graph-accent-line);
+      padding: 32px;
+      border-radius: 28px 10px 24px 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+    }
+
+    .perspective-box h3 {
+      font-family: var(--font-hand);
+      font-size: 1.55rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* --- CORE FEATURES GRID --- */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 26px;
+      margin-bottom: 80px;
+    }
+
+    .feature-box {
+      background: #ffffff;
+      border: 1px solid #d2c8a6;
+      padding: 30px 24px;
+      border-radius: 24px 8px 20px 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-box:hover {
+      transform: translateY(-8px) rotate(-0.5deg);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.12);
+    }
+
+    .feature-icon {
+      font-size: 2.2rem;
+      margin-bottom: 14px;
+      display: inline-block;
+    }
+
+    .feature-box h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #2c221e;
+    }
+
+    .feature-box p {
+      font-size: 0.9rem;
+      color: #5d4037;
+      line-height: 1.5;
+    }
+
+    /* =========================================================
+       2. REVAMPED LOWER PAGE: METRICS & BLOCKER HUB
+       ========================================================= */
+    .blocker-section {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 36px;
+      margin-bottom: 90px;
+      align-items: center;
+    }
+
+    .blocker-inspector {
+      background: #fff;
+      border: 2px solid #e63946;
+      border-radius: 32px 10px 28px 12px;
+      padding: 32px;
+      box-shadow: 0 12px 32px rgba(230, 57, 70, 0.12);
+      position: relative;
+    }
+
+    .blocker-inspector::before {
+      content: '🚨 BLOCKED TASK INSPECTOR';
+      position: absolute;
+      top: -14px;
+      left: 24px;
+      background: #e63946;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .prereq-pill {
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      color: #b71c1c;
+      padding: 12px 18px;
+      border-radius: 30px;
+      font-size: 0.88rem;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Walnut Circular Dashboard Ring */
+    .metrics-ring-board {
+      background: var(--header-bg);
+      color: var(--header-text);
+      border-radius: 40px;
+      padding: 36px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
+    .metric-circle {
+      background: rgba(255,255,255,0.05);
+      border: 2px dashed var(--header-border);
+      border-radius: 50%;
+      width: 125px;
+      height: 125px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+    }
+
+    .metric-circle:hover {
+      transform: scale(1.06);
+      background: rgba(255,255,255,0.09);
+    }
+
+    .metric-value {
+      font-family: var(--font-hand);
+      font-size: 2rem;
+      color: #ffd700;
+      line-height: 1;
+    }
+
+    .metric-label {
+      font-size: 0.68rem;
+      color: #a89f91;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    /* =========================================================
+       3. REVAMPED LOWER PAGE: S-CURVE TIMELINE FLOW (HOW IT WORKS)
+       ========================================================= */
+    .timeline-flow {
+      position: relative;
+      margin: 60px 0 100px;
+      padding: 20px 0;
+    }
+
+    .timeline-svg-path {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .timeline-node {
+      background: #ffffff;
+      border: 1px dashed var(--graph-accent-line);
+      border-radius: 28px;
+      padding: 28px 20px;
+      text-align: center;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.05);
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    .timeline-node:hover {
+      transform: translateY(-8px);
+    }
+
+    .timeline-badge {
+      width: 44px;
+      height: 44px;
+      background: var(--paper-yellow);
+      border: 2px solid #8d6e63;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-hand);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #d84315;
+      margin: -48px auto 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .timeline-node h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .timeline-node p {
+      font-size: 0.88rem;
+      color: #5d4037;
+      line-height: 1.45;
+    }
+
+    /* =========================================================
+       4. REVAMPED LOWER PAGE: GRAPH ENGINE DOSSIER
+       ========================================================= */
+    /* =========================================================
+   FLASHY GRAPH BLUEPRINT MATRIX
+   ========================================================= */
+.algo-dossier {
+  background: var(--header-bg); /* Dark Walnut Board Background */
+  border: 3px solid var(--header-border);
+  border-radius: 40px;
+  padding: 50px 36px;
+  margin-bottom: 90px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background blueprint grid lines */
+.algo-dossier::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+
+.algo-header h2 {
+  font-family: var(--font-hand);
+  font-size: 2.8rem;
+  color: #fff;
+  text-align: center;
+}
+
+.algo-header p {
+  text-align: center;
+  color: #a89f91;
+  font-size: 1rem;
+  margin-top: 6px;
+  margin-bottom: 40px;
+}
+
+/* Blueprint Stage Layout */
+.algo-blueprint-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+/* Connecting SVG Overlay */
+.algo-svg-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.algo-edge-path {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 4;
+  transition: stroke 0.4s ease, stroke-width 0.4s ease;
+}
+
+.algo-edge-path.active {
+  stroke: #d84315;
+  stroke-width: 3.5;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 6px rgba(216, 67, 21, 0.8));
+}
+
+/* Central Core Hub */
+.algo-core-hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
+  background: radial-gradient(circle at 35% 35%, #d84315, #80131d);
+  border: 4px solid #fff9c4;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 30px rgba(216, 67, 21, 0.5), inset 0 2px 6px rgba(255, 255, 255, 0.4);
+  z-index: 3;
+  animation: corePulse 3s infinite ease-in-out;
+}
+
+.algo-core-hub span {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+@keyframes corePulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 25px rgba(216, 67, 21, 0.4); }
+  50% { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 0 40px rgba(216, 67, 21, 0.8); }
+}
+
+/* Floating Cards */
+.algo-card {
+  position: relative;
+  background: var(--paper-yellow);
+  border-radius: 20px 8px 18px 10px;
+  padding: 24px 22px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+}
+
+.algo-card:nth-child(1) { transform: rotate(-2deg); background: var(--paper-yellow); }
+.algo-card:nth-child(2) { transform: rotate(1.8deg); background: var(--paper-blue); }
+.algo-card:nth-child(3) { transform: rotate(1.5deg); background: var(--paper-pink); }
+.algo-card:nth-child(4) { transform: rotate(-2.5deg); background: var(--paper-green); }
+
+.algo-card:hover {
+  transform: translateY(-8px) scale(1.03) rotate(0deg) !important;
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.45);
+  z-index: 10;
+}
+
+.algo-card-tape {
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  width: 50px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.4);
+  transform: rotate(-3deg);
+  border-radius: 2px;
+}
+
+.algo-card-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #8d6e63;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.algo-card h4 {
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  color: #2c221e;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.algo-card p {
+  font-size: 0.88rem;
+  color: #5d4037;
+  line-height: 1.45;
+}
+    /* =========================================================
+       5. PINNED NOTE FINAL CTA
+       ========================================================= */
+    .pinned-cta {
+      text-align: center;
+      background: var(--paper-yellow);
+      border-radius: 32px 8px 28px 10px;
+      padding: 60px 30px;
+      margin: 0 auto 80px;
+      max-width: 850px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+      position: relative;
+      transform: rotate(-0.8deg);
+    }
+
+    .pinned-cta::before {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 22px;
+      height: 22px;
+      background: var(--pin-red);
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .pinned-cta h2 {
+      font-family: var(--font-hand);
+      font-size: 2.8rem;
+      margin-bottom: 14px;
+    }
+
+    .pinned-cta p {
+      font-size: 1.1rem;
+      color: #5d4037;
+      max-width: 580px;
+      margin: 0 auto 32px;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      text-align: center;
+      padding: 36px;
+      font-size: 0.85rem;
+      color: #795548;
+      border-top: 1px solid var(--graph-accent-line);
+    }
+
+    @keyframes dashFlow { to { stroke-dashoffset: -100; } }
+/* =========================================================
+   DARK WALNUT NAV - ORIGINAL BOARD SHAPE & RIGHT-ALIGNED ACTIONS
+   ========================================================= */
+
+.landing-nav {
+  position: relative;
+  margin: 20px auto 40px auto; /* 40px bottom margin centers content below */
+  width: min(92%, 1180px);
+  background: var(--header-bg, #2c221e);
+  border: 2.5px solid var(--header-border, #4a3b32);
+  /* Original iconic shape: clean top corners, deeply rounded bottom corners */
+  border-radius: 12px 12px 36px 36px;
+  padding: 14px 36px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Pushes brand left, actions far right */
+  width: 100%;
+}
+
+/* --- Brand Logo --- */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: transform 0.25s ease;
+}
+
+.nav-brand:hover {
+  transform: scale(1.03);
+}
+
+.brand-icon {
+  font-size: 1.3rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.brand-name {
+  font-family: var(--font-hand, 'Comic Sans MS', cursive);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #fff9c4;
+  letter-spacing: 0.02em;
+}
+
+/* --- Navigation Links --- */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  /* Keeps links centered between brand and auth actions */
+  margin-left: auto;
+  margin-right: 40px; 
+}
+
+.nav-link {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #a89f91;
+  text-decoration: none;
+  padding: 4px 0;
+  position: relative;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+/* Underline Beam on Hover */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0%;
+  height: 2px;
+  background-color: #d84315;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(216, 67, 21, 0.8);
+  transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* --- Auth Action Buttons (Pushed Far Right) --- */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 0; /* Ensures action group sits right at the edge */
+}
+
+/* Log In Button */
+.btn-walnut-login {
+  padding: 8px 20px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #d7ccc8;
+  border: 1.5px solid rgba(215, 204, 200, 0.2);
+  border-radius: 10px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-walnut-login:hover {
+  color: #ffffff;
+  border-color: rgba(255, 249, 196, 0.5);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Sign Up Button (Anchored Far Right) */
+.btn-walnut-signup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 22px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #e64a19, #d84315);
+  border: 1.5px solid #ff7043;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(216, 67, 21, 0.35);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+.btn-walnut-signup:hover {
+  background: linear-gradient(135deg, #f4511e, #e64a19);
+  border-color: #ff8a65;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(216, 67, 21, 0.55);
+}
+
+.btn-walnut-signup:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(216, 67, 21, 0.4);
+}
+
+.btn-arrow {
+  transition: transform 0.25s ease;
+}
+
+.btn-walnut-signup:hover .btn-arrow {
+  transform: translateX(4px);
+}
+    
+  </style>
 </head>
 <body>
 
-  <!-- Animated Dark Background -->
-  <div class="dark-bg-animated"></div>
+  <!-- Walnut Navigation Bar -->
+  <!-- DARK WALNUT BOARD NAVIGATION BAR -->
+<!-- DARK WALNUT BOARD NAVIGATION BAR -->
+<nav class="landing-nav">
+  <div class="nav-container">
+    <!-- Brand Logo -->
+    <a href="index.html" class="nav-brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-name">FlowLock</span>
+    </a>
 
-  <!-- Glassmorphic Navbar -->
-  <div class="navbar-wrapper">
-    <nav class="navbar-glass">
-      <a href="index.html" class="brand">
-        <span class="brand-icon">🔒</span>
-        <span class="brand-name">FlowLock</span>
+    <!-- Navigation Links -->
+    <div class="nav-links">
+      <a href="#algorithm" class="nav-link">Graph Engine</a>
+      <a href="testbed.html" class="nav-link">Simulator</a>
+      <a href="projects.html" class="nav-link">Projects</a>
+      <a href="app.html" class="nav-link">App Workspace</a>
+    </div>
+
+    <!-- Auth Actions (Links to auth.html) -->
+    <div class="nav-actions">
+      <a href="auth.html?mode=login" class="btn-walnut-login">Log In</a>
+      <a href="auth.html?mode=signup" class="btn-walnut-signup">
+        <span>Sign Up</span>
+        <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
       </a>
-
-      <div class="nav-links">
-        <a href="#features" class="nav-link">Features</a>
-        <a href="#comparison" class="nav-link">Why FlowLock</a>
-        <a href="#stats" class="nav-link">Stats</a>
-        <a href="#faq" class="nav-link">FAQ</a>
-      </div>
-
-      <!-- Auth & Workspace Action Container (Updated via JS when authenticated) -->
-      <div class="nav-auth-actions" id="nav-auth-container">
-        <a href="auth.html" class="btn btn-secondary btn-pill">Sign In</a>
-        <a href="auth.html" class="btn btn-primary btn-pill">Get Started</a>
-      </div>
-    </nav>
-  </div>
-
-  <!-- Hero Section -->
-  <header class="hero-section">
-    <div class="hero-container">
-      <div class="badge-pill">
-        <span class="badge-dot"></span> FlowLock v2.0 Released
-      </div>
-
-      <h1 class="hero-title">
-        Never hit a <span class="text-gradient">dependency deadlock</span> again.
-      </h1>
-
-      <p class="hero-subtitle">
-        FlowLock visually graphs cross-team task dependencies, blocks invalid workflows, and alerts you before code freezes stall your releases.
-      </p>
-
-      <div class="hero-actions" id="hero-actions-container">
-        <a href="auth.html" class="btn btn-primary btn-pill btn-lg">Start Free Trial →</a>
-        <a href="#features" class="btn btn-secondary btn-pill btn-lg">Explore Features</a>
-      </div>
-
-      <!-- Hero Interactive Preview Card -->
-      <div class="hero-preview-card">
-        <div class="preview-header">
-          <div class="window-controls">
-            <span class="dot red"></span>
-            <span class="dot yellow"></span>
-            <span class="dot green"></span>
-          </div>
-          <span class="preview-title">Project: Payment Gateway v3.2</span>
-          <span class="preview-pill">Active Graph</span>
-        </div>
-
-        <div class="preview-board-mock">
-          <div class="mock-col">
-            <div class="col-title"><span>TO DO</span> <span>3</span></div>
-            <div class="mock-card">
-              <div class="card-meta"><span>FL-102</span><span>API Core</span></div>
-              <div class="card-title">Define OAuth2 Endpoints</div>
-            </div>
-            <div class="mock-card locked">
-              <div class="card-meta"><span>FL-108</span><span>Frontend</span></div>
-              <div class="card-title">Implement Login UI</div>
-              <div class="card-blocker-alert">⚠️ Blocked by FL-102</div>
-            </div>
-          </div>
-
-          <div class="mock-col">
-            <div class="col-title"><span>IN PROGRESS</span> <span>2</span></div>
-            <div class="mock-card">
-              <div class="card-meta"><span>FL-98</span><span>DevOps</span></div>
-              <div class="card-title">Setup Staging Database</div>
-            </div>
-          </div>
-
-          <div class="mock-col">
-            <div class="col-title"><span>DONE</span> <span>8</span></div>
-            <div class="mock-card">
-              <div class="card-meta"><span>FL-88</span><span>Design</span></div>
-              <div class="card-title">User Flow Diagrams</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Trust Bar -->
-  <div class="trust-bar">
-    <div class="container">
-      <div class="trust-label">Trusted by engineering teams at</div>
-      <div class="trust-logos">
-        <span>Acme Corp</span>
-        <span>Veloce Labs</span>
-        <span>HyperScale</span>
-        <span>DataForge</span>
-        <span>Apex Systems</span>
-      </div>
     </div>
   </div>
+</nav>
 
-  <!-- Features Section -->
-  <section id="features" class="section-padding">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Powerful Engine</span>
-        <h2 style="font-size: 2.25rem; font-weight: 700; margin-top: 8px;">Built for high-velocity engineering</h2>
+  <div class="site-wrapper">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="hero-text">
+        <h1 class="gsap-hero-title">Kanban Powered by Directed Dependency Graphs</h1>
+        <p class="gsap-hero-p">
+          Stop pushing tasks out of order. FlowLock binds your Kanban board directly to a graph DAG so tasks auto-lock behind prerequisites and unlock instantly the second blockers resolve.
+        </p>
+        <div class="hero-btns gsap-hero-btns">
+          <a href="testbed.html" class="btn btn-accent" style="padding: 14px 30px; font-size: 0.95rem;">Get Started Free</a>
+          <a href="#demo" class="btn btn-secondary" style="padding: 14px 24px; font-size: 0.95rem;">View Demo</a>
+        </div>
       </div>
 
-      <div class="features-grid">
-        <div class="card-rounded feature-card">
-          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">🕸 Dynamic Graph Canvas</h3>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            Visualize parent-child task relationships with auto-layout Directed Acyclic Graphs (DAGs).
-          </p>
+      <div class="hero-board gsap-hero-board">
+        <svg class="hero-graph-svg">
+          <line x1="115" y1="85" x2="225" y2="310" class="graph-edge graph-edge-active hero-edge" />
+          <line x1="335" y1="85" x2="225" y2="310" class="graph-edge hero-edge" />
+        </svg>
+
+        <div class="hero-node node-1 gsap-node">
+          <div class="washi-tape"></div>
+          <div class="node-tag"><span style="color: #2e7d32;">✔ COMPLETED</span> <span>FL-101</span></div>
+          <div class="node-title">Database Schema</div>
         </div>
 
-        <div class="card-rounded feature-card">
-          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">🚫 Rigid Locking Rules</h3>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            Prevent status updates on downstream tasks until all prerequisite blocker tasks are marked Done.
-          </p>
+        <div class="hero-node node-2 gsap-node">
+          <div class="washi-tape" style="background: rgba(46, 125, 50, 0.2);"></div>
+          <div class="node-tag"><span style="color: #c62828;">⏳ IN PROGRESS</span> <span>FL-102</span></div>
+          <div class="node-title">OAuth Endpoint</div>
         </div>
 
-        <div class="card-rounded feature-card">
-          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">⚡ Real-time Cycle Detection</h3>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            Instantly catch circular dependencies (Task A → Task B → Task A) before saving sprint plans.
-          </p>
+        <div class="hero-node node-3 gsap-node">
+          <div class="node-tag"><span style="color: #d84315;">🔒 LOCKED (1 BLOCKER)</span> <span>FL-103</span></div>
+          <div class="node-title">User Dashboard UI</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY THIS IS DIFFERENT -->
+    <section class="section-header gsap-fade-up" id="why-different">
+      <h2>Why Dependency-Aware Kanban?</h2>
+      <p>Standard boards assume tasks are independent. Real engineering projects are interconnected trees.</p>
+    </section>
+
+    <div class="comparison-wrapper">
+      <div class="comparison-card gsap-stagger-left">
+        <h3>Traditional Kanban</h3>
+        <ul class="comparison-list">
+          <li>❌ Team members pull blocked tasks into "In Progress" prematurely.</li>
+          <li>❌ Blockers are hidden in text descriptions or manual comments.</li>
+          <li>❌ No warning when circular dependencies derail sprint execution.</li>
+          <li>❌ Manual updates needed across teams when prerequisites clear.</li>
+        </ul>
+      </div>
+
+      <div class="comparison-card highlight gsap-stagger-right">
+        <h3>FlowLock Graph-Kanban</h3>
+        <ul class="comparison-list">
+          <li>✔ <strong>Smart Task Locking:</strong> Cards stay locked until upstream nodes finish.</li>
+          <li>✔ <strong>Visual Dependency Edges:</strong> Instantly see relationships on tactile graph paper.</li>
+          <li>✔ <strong>Cycle Detection:</strong> Engine prevents circular dependencies at creation.</li>
+          <li>✔ <strong>State Propagation:</strong> Completing a task auto-promotes downstream work.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 1. REDESIGNED INTERACTIVE DEPENDENCY ENGINE -->
+    <section class="section-header gsap-fade-up" id="demo">
+      <h2>Interactive Dependency Engine</h2>
+      <p>Click Task A or B to trigger dynamic state propagation through the node network.</p>
+    </section>
+
+    <div class="engine-canvas-container gsap-zoom-in">
+      <div class="engine-bar">
+        <span style="font-weight: 700; font-size: 0.88rem; color: #5d4037;">🕸️ DYNAMIC DAG NODE SIMULATOR</span>
+        <button id="resetDemoBtn" class="btn btn-secondary" style="padding: 8px 18px; font-size: 0.8rem;" onclick="resetEngineDemo()">🔄 Reset Node Graph</button>
+      </div>
+
+      <div class="engine-stage">
+        <svg class="engine-svg">
+          <!-- Edge A -> C -->
+          <line id="edgeAC" x1="150" y1="160" x2="680" y2="280" class="engine-edge-line engine-edge-locked" />
+          <!-- Edge B -> C -->
+          <line id="edgeBC" x1="680" y1="90" x2="680" y2="280" class="engine-edge-line engine-edge-locked" />
+        </svg>
+
+        <!-- Node A -->
+        <div class="interactive-node" id="nodeA" onclick="toggleNodeA()">
+          <div class="node-header-tag">
+            <span id="tagA" style="color: #c62828;">⏳ IN PROGRESS</span>
+            <span>TASK A</span>
+          </div>
+          <div style="font-family: var(--font-hand); font-size: 1.15rem; font-weight: 700;">API Gateway</div>
+          <div style="font-size: 0.72rem; color: #6d594b; margin-top: 6px;">Click to toggle completion</div>
         </div>
 
-        <div class="card-rounded feature-card">
-          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">🔔 Slack & Webhook Alerts</h3>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            Notify owners the exact second an upstream blocker task is resolved so work can resume immediately.
-          </p>
+        <!-- Node B -->
+        <div class="interactive-node" id="nodeB" onclick="toggleNodeB()">
+          <div class="node-header-tag">
+            <span id="tagB" style="color: #c62828;">⏳ IN PROGRESS</span>
+            <span>TASK B</span>
+          </div>
+          <div style="font-family: var(--font-hand); font-size: 1.15rem; font-weight: 700;">Auth Database</div>
+          <div style="font-size: 0.72rem; color: #6d594b; margin-top: 6px;">Click to toggle completion</div>
         </div>
 
-        <div class="card-rounded feature-card">
-          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">📊 Critical Path Analysis</h3>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            Highlight long-chain task sequences automatically to predict delivery dates with zero guesswork.
-          </p>
-        </div>
-
-        <div class="card-rounded feature-card">
-          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">🛡 Role-Based Access</h3>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            Ensure only project leads and authorized owners can override or bypass dependency locks.
-          </p>
+        <!-- Node C (Dependent) -->
+        <div class="interactive-node is-locked" id="nodeC">
+          <div class="node-header-tag">
+            <span id="tagC" style="color: #b71c1c;">🔒 LOCKED</span>
+            <span>TASK C</span>
+          </div>
+          <div style="font-family: var(--font-hand); font-size: 1.15rem; font-weight: 700;">Mobile Login App</div>
+          <div id="descC" style="font-size: 0.72rem; color: #8d6e63; margin-top: 6px;">Requires A & B to complete</div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- Comparison Section -->
-  <section id="comparison" class="section-padding" style="background: rgba(18, 24, 38, 0.4);">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Comparison</span>
-        <h2 style="font-size: 2.25rem; font-weight: 700; margin-top: 8px;">Traditional Boards vs. FlowLock</h2>
+    <!-- DUAL PERSPECTIVE -->
+    <section class="section-header gsap-fade-up">
+      <h2>Two Perspectives. One Source of Truth.</h2>
+      <p>Seamlessly pivot between standard column execution and full node network graphs.</p>
+    </section>
+
+    <div class="dual-perspective-grid">
+      <div class="perspective-box gsap-stagger-card">
+        <h3>📋 Column View</h3>
+        <p style="font-size: 0.9rem; color: #5d4037; line-height: 1.5; margin-top: 8px;">
+          Optimized for day-to-day execution. Columns reflect state (To-Do, In Progress, Done) with locked visual badges preventing premature movement.
+        </p>
       </div>
-
-      <div class="comparison-grid">
-        <div class="card-rounded card-comparison">
-          <h3 style="color: var(--danger); font-size: 1.25rem; margin-bottom: 16px;">Traditional Kanban / Jira</h3>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; color: var(--text-secondary); font-size: 0.95rem;">
-            <li>❌ Engineers start work on blocked tasks by mistake</li>
-            <li>❌ Circular dependencies hidden in buried text links</li>
-            <li>❌ Sprint delays discovered late during code freeze</li>
-            <li>❌ Manual check-ins to ask "Is API ready yet?"</li>
-          </ul>
-        </div>
-
-        <div class="card-rounded card-comparison" style="border-color: var(--primary-border);">
-          <h3 style="color: var(--success); font-size: 1.25rem; margin-bottom: 16px;">FlowLock Workspace</h3>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; color: var(--text-primary); font-size: 0.95rem;">
-            <li>✅ Tasks strictly locked until prerequisites pass</li>
-            <li>✅ Interactive visual graph highlights all blockers</li>
-            <li>✅ Automated release forecasting via critical path</li>
-            <li>✅ Immediate push alerts when blockers unlock</li>
-          </ul>
-        </div>
+      <div class="perspective-box gsap-stagger-card">
+        <h3>🕸️ Dependency Node View</h3>
+        <p style="font-size: 0.9rem; color: #5d4037; line-height: 1.5; margin-top: 8px;">
+          Optimized for system architects. Displays explicit directed connections, critical paths, and structural bottleneck clusters.
+        </p>
       </div>
     </div>
-  </section>
 
-  <!-- Stats Section -->
-  <section id="stats" class="section-padding">
-    <div class="container">
-      <div class="stats-grid">
-        <div class="stat-box card-rounded">
-          <span class="stat-number">40%</span>
-          <span class="stat-label">Reduction in sprint blocker downtime</span>
-        </div>
-        <div class="stat-box card-rounded">
-          <span class="stat-number">10x</span>
-          <span class="stat-label">Faster dependency discovery</span>
-        </div>
-        <div class="stat-box card-rounded">
-          <span class="stat-number">100%</span>
-          <span class="stat-label">Prevention of circular deadlocks</span>
-        </div>
+    <!-- CORE FEATURES -->
+    <section class="section-header gsap-fade-up" id="features">
+      <h2>Engineered Around Dependencies</h2>
+      <p>Features specifically designed to keep complex workflows moving cleanly.</p>
+    </section>
+
+    <div class="features-grid">
+      <div class="feature-box gsap-feature">
+        <div class="feature-icon">🕸️</div>
+        <h3>Dependency DAG</h3>
+        <p>Map complex relationships between tasks using directed edges directly on your graph paper board.</p>
+      </div>
+      <div class="feature-box gsap-feature">
+        <div class="feature-icon">🔒</div>
+        <h3>Smart Task Locking</h3>
+        <p>Prevent team members from starting work whose dependencies haven't been completed.</p>
+      </div>
+      <div class="feature-box gsap-feature">
+        <div class="feature-icon">🔄</div>
+        <h3>Real-time Cycle Detection</h3>
+        <p>Instant algorithm check stops circular loops (e.g. A ➔ B ➔ C ➔ A) from locking your sprint.</p>
+      </div>
+      <div class="feature-box gsap-feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Cascading State Propagation</h3>
+        <p>Reverting an upstream task automatically re-locks dependent downstream tasks across all columns.</p>
+      </div>
+      <div class="feature-box gsap-feature">
+        <div class="feature-icon">🎯</div>
+        <h3>Critical Path Highlighting</h3>
+        <p>Identify the longest chain of dependent tasks to prioritize work that directly impacts launch dates.</p>
+      </div>
+      <div class="feature-box gsap-feature">
+        <div class="feature-icon">📊</div>
+        <h3>Project Insights</h3>
+        <p>Get instant health metrics on blocker counts, graph depth, and unblocked ready tasks.</p>
       </div>
     </div>
-  </section>
 
-  <!-- Testimonials Section -->
-  <section class="section-padding" style="background: rgba(18, 24, 38, 0.4);">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Testimonials</span>
-        <h2 style="font-size: 2.25rem; font-weight: 700; margin-top: 8px;">Loved by Tech Leads</h2>
-      </div>
+    <!-- 2. REVAMPED METRICS & BLOCKER SECTION -->
+    <section class="blocker-section">
+      <div class="blocker-inspector gsap-stagger-left">
+        <h3 style="font-family: var(--font-hand); font-size: 1.45rem;">Checkout Page Integration</h3>
+        <p style="font-size: 0.85rem; color: #5d4037; margin-top: 4px;">Task state: <strong>LOCKED</strong></p>
 
-      <div class="comparison-grid">
-        <div class="card-rounded testimonial-card">
-          <p style="color: var(--text-secondary); font-style: italic;">
-            "FlowLock completely eliminated the 'Wait, I thought you finished that API' conversations in our daily standups. The visual locking is brilliant."
-          </p>
-          <div class="user-meta">
-            <strong>Sarah Chen</strong>
-            <span>VP of Engineering, Veloce Labs</span>
+        <div style="margin-top: 18px;">
+          <span style="font-size: 0.75rem; font-weight: 800; color: #b71c1c;">UNRESOLVED PREREQUISITES (2):</span>
+          <div class="prereq-pill">
+            <span>FL-88: Stripe Webhook Listener</span>
+            <strong>⏳ In Progress</strong>
+          </div>
+          <div class="prereq-pill">
+            <span>FL-92: Cart Session Store</span>
+            <strong>📋 To-Do</strong>
           </div>
         </div>
+      </div>
 
-        <div class="card-rounded testimonial-card">
-          <p style="color: var(--text-secondary); font-style: italic;">
-            "Catching circular task chains before starting a 2-week sprint saved us dozens of engineering hours. We can't ship without FlowLock now."
-          </p>
-          <div class="user-meta">
-            <strong>Marcus Vance</strong>
-            <span>Lead Architect, DataForge</span>
-          </div>
+      <!-- Walnut Circular Stat Ring Dashboard -->
+      <div class="metrics-ring-board gsap-stagger-right">
+        <div class="metric-circle">
+          <div class="metric-value gsap-counter" data-target="24">0</div>
+          <div class="metric-label">Total Tasks</div>
+        </div>
+        <div class="metric-circle">
+          <div class="metric-value gsap-counter" style="color: #81c784;" data-target="14">0</div>
+          <div class="metric-label">Completed</div>
+        </div>
+        <div class="metric-circle">
+          <div class="metric-value gsap-counter" style="color: #ffb74d;" data-target="6">0</div>
+          <div class="metric-label">In Progress</div>
+        </div>
+        <div class="metric-circle">
+          <div class="metric-value gsap-counter" style="color: #e57373;" data-target="4">0</div>
+          <div class="metric-label">Blocked Tasks</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. REVAMPED S-CURVE FLOW TIMELINE (HOW IT WORKS) -->
+    <section class="section-header gsap-fade-up">
+      <h2>How FlowLock Operates</h2>
+      <p>Four simple steps to total clarity across your team.</p>
+    </section>
+
+    <div class="timeline-flow">
+      <div class="timeline-grid">
+        <div class="timeline-node gsap-step">
+          <div class="timeline-badge">1</div>
+          <h4>Create Tasks</h4>
+          <p>Pin task notes onto your tactile graph paper board in seconds.</p>
+        </div>
+        <div class="timeline-node gsap-step">
+          <div class="timeline-badge">2</div>
+          <h4>Link Dependencies</h4>
+          <p>Connect prerequisites required before downstream work starts.</p>
+        </div>
+        <div class="timeline-node gsap-step">
+          <div class="timeline-badge">3</div>
+          <h4>Build Graph DAG</h4>
+          <p>FlowLock validates the layout into an acyclic network structure.</p>
+        </div>
+        <div class="timeline-node gsap-step">
+          <div class="timeline-badge">4</div>
+          <h4>Auto-Propagate</h4>
+          <p>States update dynamically as upstream dependencies clear.</p>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- FAQ Section -->
-  <section id="faq" class="section-padding">
-    <div class="container" style="max-width: 800px;">
-      <div class="section-header">
-        <span class="section-tag">FAQ</span>
-        <h2 style="font-size: 2.25rem; font-weight: 700; margin-top: 8px;">Frequently Asked Questions</h2>
-      </div>
+    <!-- 4. REVAMPED GRAPH ENGINE DOSSIER (ALGORITHM) -->
+    <div class="algo-dossier gsap-fade-up" id="algorithm">
+      <h2 style="font-family: var(--font-hand); font-size: 2.2rem; text-align: center;">Powered by Graph Theory</h2>
+<!-- REVAMPED GRAPH ENGINE BLUEPRINT MATRIX -->
+<div class="algo-dossier gsap-fade-up" id="algorithm">
+  <div class="algo-header">
+    <h2>Powered by Graph Theory</h2>
+    <p>Under the hood, FlowLock executes four deterministic graph engines in real time.</p>
+  </div>
 
-      <div class="faq-list">
-        <div class="faq-item card-rounded">
-          <h4>How does FlowLock handle cyclic dependencies?</h4>
-          <p>FlowLock runs graph validation algorithms in real-time. If you attempt to connect Task A to Task B when B already depends on A, the system immediately rejects the link with an error warning.</p>
-        </div>
+  <div class="algo-blueprint-stage">
+    <!-- SVG Network Connection Lines -->
+    <svg class="algo-svg-overlay" id="algoSvg">
+      <line id="algoLine1" class="algo-edge-path" />
+      <line id="algoLine2" class="algo-edge-path" />
+      <line id="algoLine3" class="algo-edge-path" />
+      <line id="algoLine4" class="algo-edge-path" />
+    </svg>
 
-        <div class="faq-item card-rounded">
-          <h4>Can I override a locked task in emergency situations?</h4>
-          <p>Yes. Project administrators have permissions to force-unlock tasks or bypass dependency rules, with all override actions logged for audit history.</p>
-        </div>
+    <!-- Central Core -->
+    <div class="algo-core-hub" id="algoCore">
+      <span>🕸️</span>
+      CORE
+    </div>
 
-        <div class="faq-item card-rounded">
-          <h4>Does FlowLock integrate with GitHub and Jira?</h4>
-          <p>Absolutely. You can link pull requests and Jira issues directly to FlowLock nodes to automatically move task statuses when PRs are merged.</p>
-        </div>
+    <!-- Card 1 -->
+    <div class="algo-card" onmouseenter="highlightAlgoLine(1)" onmouseleave="resetAlgoLines()">
+      <div class="algo-card-tape"></div>
+      <div class="algo-card-badge"><span>🧩</span> ENGINE 01</div>
+      <h4>Directed Acyclic Graph</h4>
+      <p>Structures all board tasks into a strictly directional DAG, eliminating deadlocks and execution ambiguity.</p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="algo-card" onmouseenter="highlightAlgoLine(2)" onmouseleave="resetAlgoLines()">
+      <div class="algo-card-tape" style="left: auto; right: 20px; transform: rotate(4deg);"></div>
+      <div class="algo-card-badge"><span>🔄</span> ENGINE 02</div>
+      <h4>DFS Cycle Prevention</h4>
+      <p>Uses Depth-First Search traversal to intercept circular dependencies (A ➔ B ➔ C ➔ A) before they are created.</p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="algo-card" onmouseenter="highlightAlgoLine(3)" onmouseleave="resetAlgoLines()">
+      <div class="algo-card-tape"></div>
+      <div class="algo-card-badge"><span>⚡</span> ENGINE 03</div>
+      <h4>Topological Sorting</h4>
+      <p>Computes the optimum linear path so team members clear critical bottlenecks prior to downstream assembly.</p>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="algo-card" onmouseenter="highlightAlgoLine(4)" onmouseleave="resetAlgoLines()">
+      <div class="algo-card-tape" style="left: auto; right: 20px; transform: rotate(-3deg);"></div>
+      <div class="algo-card-badge"><span>🌊</span> ENGINE 04</div>
+      <h4>Transitive Cascades</h4>
+      <p>Propagates state changes instantly through entire downstream subgraphs as upstream prerequisite tasks resolve.</p>
+    </div>
+  </div>
+</div>
+
+    <!-- 5. PINNED NOTE FINAL CTA -->
+    <div class="pinned-cta gsap-zoom-in">
+      <h2>Eliminate Dependency Chaos Today</h2>
+      <p>Stop guessing which tasks are ready to start. Experience graph-aware project management on graph paper aesthetics.</p>
+      <div style="display: flex; gap: 16px; justify-content: center;">
+        <a href="testbed.html" class="btn btn-accent" style="padding: 14px 28px; font-size: 1rem;">Get Started Free</a>
+        <a href="#demo" class="btn btn-secondary" style="padding: 14px 22px; font-size: 1rem;">View Engine Demo</a>
       </div>
     </div>
-  </section>
 
-  <!-- CTA Banner -->
-  <section class="section-padding">
-    <div class="container">
-      <div class="cta-banner card-rounded" id="cta-banner-container">
-        <h2 style="font-size: 2rem; margin-bottom: 12px;">Ready to unlock smooth deployments?</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 28px;">Set up your team dependency graph in less than 5 minutes.</p>
-        <a href="auth.html" class="btn btn-primary btn-pill btn-lg">Create Free Account →</a>
-      </div>
-    </div>
-  </section>
+  </div>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-content">
-        <div class="brand">
-          <span class="brand-icon">🔒</span>
-          <span class="brand-name">FlowLock</span>
-        </div>
-        <div class="footer-links">
-          <a href="#features">Features</a>
-          <a href="#comparison">Why FlowLock</a>
-          <a href="#faq">FAQ</a>
-          <a href="auth.html">Sign In</a>
-          <a href="app.html">Workspace</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        &copy; 2026 FlowLock Inc. All rights reserved.
-      </div>
-    </div>
+  <footer>
+    <p>© 2026 FlowLock. Styled with Cream Graph Paper & Walnut Trim.</p>
   </footer>
 
-  <!-- State & Interactivity Scripts -->
+  <!-- Lenis Script -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+
+  <!-- GSAP & ScrollTrigger Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+ <!-- Lenis Script -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+
+  <!-- GSAP & ScrollTrigger Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const isAuthenticated = localStorage.getItem('flowlock_authenticated') === 'true';
-
-      if (isAuthenticated) {
-        // 1. Update Navbar Actions
-        const navContainer = document.getElementById('nav-auth-container');
-        if (navContainer) {
-          navContainer.innerHTML = `
-            
-<a href="projects.html" class="btn btn-primary btn-pill">Launch Workspace 🚀</a>
-            <button id="btn-logout" class="btn btn-secondary btn-pill" style="margin-left: 8px;">Sign Out</button>
-          `;
-        }
-
-        // 2. Update Hero Actions
-        const heroContainer = document.getElementById('hero-actions-container');
-        if (heroContainer) {
-          heroContainer.innerHTML = `
-<a href="projects.html" class="btn btn-primary btn-pill">Launch Workspace 🚀</a>
-            <a href="#features" class="btn btn-secondary btn-pill btn-lg">Explore Features</a>
-          `;
-        }
-
-        // 3. Update Bottom CTA Banner
-        const ctaContainer = document.getElementById('cta-banner-container');
-        if (ctaContainer) {
-          ctaContainer.innerHTML = `
-            <h2 style="font-size: 2rem; margin-bottom: 12px;">Welcome back to FlowLock</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 28px;">Your dependency graphs and projects are ready.</p>
-<a href="projects.html" class="btn btn-primary btn-pill">Launch Workspace 🚀</a>          `;
-        }
-
-        // 4. Logout Handler
-        document.getElementById('btn-logout')?.addEventListener('click', () => {
-          localStorage.removeItem('flowlock_authenticated');
-          window.location.reload();
-        });
-      }
+    /* --- 1. LENIS SMOOTH SCROLL INITIALIZATION --- */
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1.0
     });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+
+    gsap.ticker.lagSmoothing(0);
+
+    /* --- 2. DYNAMIC SVG LINE CALCULATOR --- */
+    function getPinCoordinates(element, container) {
+      const elRect = element.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      return {
+        x: elRect.left + elRect.width / 2 - containerRect.left,
+        y: elRect.top + 10 - containerRect.top // Connects near the top pin
+      };
+    }
+
+    function updateGraphLines() {
+      // 1. Hero Graph Lines Alignment
+      const heroBoard = document.querySelector('.hero-board');
+      const node1 = document.querySelector('.node-1');
+      const node2 = document.querySelector('.node-2');
+      const node3 = document.querySelector('.node-3');
+      const heroEdges = document.querySelectorAll('.hero-edge');
+
+      if (heroBoard && node1 && node2 && node3 && heroEdges.length >= 2) {
+        const pos1 = getPinCoordinates(node1, heroBoard);
+        const pos2 = getPinCoordinates(node2, heroBoard);
+        const pos3 = getPinCoordinates(node3, heroBoard);
+
+        // Edge 1: Node 1 -> Node 3
+        heroEdges[0].setAttribute('x1', pos1.x);
+        heroEdges[0].setAttribute('y1', pos1.y);
+        heroEdges[0].setAttribute('x2', pos3.x);
+        heroEdges[0].setAttribute('y2', pos3.y);
+
+        // Edge 2: Node 2 -> Node 3
+        heroEdges[1].setAttribute('x1', pos2.x);
+        heroEdges[1].setAttribute('y1', pos2.y);
+        heroEdges[1].setAttribute('x2', pos3.x);
+        heroEdges[1].setAttribute('y2', pos3.y);
+      }
+
+      // 2. Interactive Engine Demo Lines Alignment
+      const engineStage = document.querySelector('.engine-stage');
+      const nodeA = document.getElementById('nodeA');
+      const nodeB = document.getElementById('nodeB');
+      const nodeC = document.getElementById('nodeC');
+      const edgeAC = document.getElementById('edgeAC');
+      const edgeBC = document.getElementById('edgeBC');
+
+      if (engineStage && nodeA && nodeB && nodeC && edgeAC && edgeBC) {
+        const posA = getPinCoordinates(nodeA, engineStage);
+        const posB = getPinCoordinates(nodeB, engineStage);
+        const posC = getPinCoordinates(nodeC, engineStage);
+
+        // Edge A -> C
+        edgeAC.setAttribute('x1', posA.x);
+        edgeAC.setAttribute('y1', posA.y);
+        edgeAC.setAttribute('x2', posC.x);
+        edgeAC.setAttribute('y2', posC.y);
+
+        // Edge B -> C
+        edgeBC.setAttribute('x1', posB.x);
+        edgeBC.setAttribute('y1', posB.y);
+        edgeBC.setAttribute('x2', posC.x);
+        edgeBC.setAttribute('y2', posC.y);
+      }
+    }
+
+    // Recalculate on window resize & initial load
+    window.addEventListener('resize', updateGraphLines);
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(updateGraphLines, 100);
+    });
+
+    /* --- 3. GSAP SCROLL ANIMATIONS --- */
+    gsap.registerPlugin(ScrollTrigger);
+
+    const heroTl = gsap.timeline({
+      onComplete: updateGraphLines
+    });
+
+    heroTl
+      .from('.landing-nav', { y: -80, opacity: 0, duration: 0.8, ease: 'power3.out' })
+      .from('.gsap-hero-title', { y: 30, opacity: 0, duration: 0.8, ease: 'power3.out' }, '-=0.4')
+      .from('.gsap-hero-p', { y: 20, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.5')
+      .from('.gsap-hero-btns', { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' }, '-=0.4')
+      .from('.gsap-hero-board', { scale: 0.92, opacity: 0, duration: 0.8, ease: 'back.out(1.4)' }, '-=0.6')
+      .from('.gsap-node', { 
+        scale: 0, 
+        opacity: 0, 
+        stagger: 0.15, 
+        duration: 0.6, 
+        ease: 'back.out(1.7)',
+        onUpdate: updateGraphLines 
+      }, '-=0.4')
+      .from('.hero-edge', { opacity: 0, duration: 0.5 }, '-=0.2');
+
+    // Section Headers Fade Up
+    gsap.utils.toArray('.gsap-fade-up').forEach((header) => {
+      gsap.from(header, {
+        scrollTrigger: { trigger: header, start: 'top 85%' },
+        y: 35, opacity: 0, duration: 0.8, ease: 'power3.out'
+      });
+    });
+
+    // Comparison Section Stagger
+    gsap.from('.gsap-stagger-left', {
+      scrollTrigger: { trigger: '.comparison-wrapper', start: 'top 80%' },
+      x: -50, opacity: 0, duration: 0.8, ease: 'power3.out'
+    });
+    gsap.from('.gsap-stagger-right', {
+      scrollTrigger: { trigger: '.comparison-wrapper', start: 'top 80%' },
+      x: 50, opacity: 0, duration: 0.8, ease: 'power3.out', delay: 0.15
+    });
+
+    // Zoom In Containers
+    gsap.utils.toArray('.gsap-zoom-in').forEach((element) => {
+      gsap.from(element, {
+        scrollTrigger: { trigger: element, start: 'top 85%' },
+        scale: 0.94, opacity: 0, duration: 0.8, ease: 'power3.out',
+        onComplete: updateGraphLines
+      });
+    });
+
+    // Features Stagger
+    gsap.from('.gsap-feature', {
+      scrollTrigger: { trigger: '.features-grid', start: 'top 80%' },
+      y: 40, opacity: 0, stagger: 0.1, duration: 0.6, ease: 'power3.out'
+    });
+
+    // Metric Counters
+    gsap.from('.metric-circle', {
+      scrollTrigger: { 
+        trigger: '.metrics-ring-board', 
+        start: 'top 85%',
+        onEnter: () => {
+          document.querySelectorAll('.gsap-counter').forEach((counter) => {
+            const target = +counter.getAttribute('data-target');
+            gsap.to(counter, {
+              innerText: target,
+              duration: 1.5,
+              snap: { innerText: 1 },
+              ease: 'power2.out'
+            });
+          });
+        }
+      },
+      scale: 0.8, opacity: 0, stagger: 0.1, duration: 0.6, ease: 'back.out(1.5)'
+    });
+
+    // Timeline Steps Stagger
+    gsap.from('.gsap-step', {
+      scrollTrigger: { trigger: '.timeline-grid', start: 'top 80%' },
+      y: 35, opacity: 0, stagger: 0.12, duration: 0.7, ease: 'power3.out'
+    });
+
+    // Algorithm Dossier
+    gsap.from('.gsap-algo', {
+      scrollTrigger: { trigger: '.dossier-list', start: 'top 85%' },
+      x: -30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power3.out'
+    });
+
+    /* --- 4. DYNAMIC INTERACTIVE ENGINE STATES --- */
+    let stateA = false;
+    let stateB = false;
+
+    function updateEngineState() {
+      const nodeA = document.getElementById('nodeA');
+      const nodeB = document.getElementById('nodeB');
+      const nodeC = document.getElementById('nodeC');
+
+      const tagA = document.getElementById('tagA');
+      const tagB = document.getElementById('tagB');
+      const tagC = document.getElementById('tagC');
+      const descC = document.getElementById('descC');
+
+      const edgeAC = document.getElementById('edgeAC');
+      const edgeBC = document.getElementById('edgeBC');
+
+      // Update Node A
+      if (stateA) {
+        nodeA.classList.add('is-done');
+        tagA.innerText = '✔ COMPLETED';
+        tagA.style.color = '#2e7d32';
+        edgeAC.className.baseVal = 'engine-edge-line engine-edge-unlocked';
+      } else {
+        nodeA.classList.remove('is-done');
+        tagA.innerText = '⏳ IN PROGRESS';
+        tagA.style.color = '#c62828';
+        edgeAC.className.baseVal = 'engine-edge-line engine-edge-locked';
+      }
+
+      // Update Node B
+      if (stateB) {
+        nodeB.classList.add('is-done');
+        tagB.innerText = '✔ COMPLETED';
+        tagB.style.color = '#2e7d32';
+        edgeBC.className.baseVal = 'engine-edge-line engine-edge-unlocked';
+      } else {
+        nodeB.classList.remove('is-done');
+        tagB.innerText = '⏳ IN PROGRESS';
+        tagB.style.color = '#c62828';
+        edgeBC.className.baseVal = 'engine-edge-line engine-edge-locked';
+      }
+
+      // Evaluate Node C (Requires BOTH A & B)
+      if (stateA && stateB) {
+        nodeC.className = 'interactive-node is-ready';
+        tagC.innerText = '🔓 UNLOCKED & READY';
+        tagC.style.color = '#2e7d32';
+        descC.innerText = 'All prerequisites satisfied! Ready to build.';
+      } else if (stateA || stateB) {
+        nodeC.className = 'interactive-node is-locked';
+        tagC.innerText = '🔒 PARTIALLY LOCKED';
+        tagC.style.color = '#d84315';
+        descC.innerText = `Waiting on ${!stateA ? 'Task A' : 'Task B'}...`;
+      } else {
+        nodeC.className = 'interactive-node is-locked';
+        tagC.innerText = '🔒 LOCKED';
+        tagC.style.color = '#b71c1c';
+        descC.innerText = 'Requires A & B to complete';
+      }
+
+      updateGraphLines();
+    }
+
+    function toggleNodeA() {
+      stateA = !stateA;
+      updateEngineState();
+    }
+
+    function toggleNodeB() {
+      stateB = !stateB;
+      updateEngineState();
+    }
+
+    function resetEngineDemo() {
+      stateA = false;
+      stateB = false;
+      updateEngineState();
+    }
   </script>
+
 </body>
 </html>

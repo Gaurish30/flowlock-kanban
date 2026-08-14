@@ -1,0 +1,226 @@
+/* =========================================================
+   SIMULATOR WORKSPACE & STICKY NOTE GRAPH CANVAS
+   ========================================================= */
+
+.sim-container {
+  width: min(94%, 1300px);
+  margin: 0 auto 60px auto;
+}
+
+/* Header Board */
+.sim-header-board {
+  background: var(--header-bg, #2c221e);
+  border: 2.5px solid var(--header-border, #4a3b32);
+  border-radius: 16px;
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  margin-bottom: 24px;
+}
+
+.sim-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffb74d;
+  text-transform: uppercase;
+}
+
+.sim-title-group h2 {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.8rem;
+  color: #fff9c4;
+  margin: 4px 0;
+}
+
+.sim-title-group p {
+  color: #a89f91;
+  font-size: 0.9rem;
+}
+
+.sim-btn-reset {
+  background: #d84315;
+  color: #fff;
+  border: 1.5px solid #ff7043;
+  padding: 10px 20px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(216, 67, 21, 0.4);
+  transition: all 0.2s ease;
+}
+
+.sim-btn-reset:hover {
+  background: #f4511e;
+  transform: translateY(-2px);
+}
+
+/* Workspace Layout */
+.sim-workspace {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+}
+
+/* Interactive Canvas */
+.sim-canvas {
+  position: relative;
+  height: 520px;
+  background: rgba(251, 248, 241, 0.6);
+  border: 2px dashed rgba(139, 115, 85, 0.35);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.sim-svg-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Node Customization */
+.sim-node {
+  position: absolute;
+  width: 220px;
+  padding: 18px 16px;
+  border-radius: 14px 4px 12px 6px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 2;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.sim-node:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.22);
+}
+
+.sim-node.is-locked {
+  opacity: 0.75;
+  border: 2px dashed #b71c1c;
+  cursor: not-allowed;
+}
+
+.sim-node.is-done {
+  border: 2px solid #2e7d32;
+  background: #e8f5e9 !important;
+}
+
+.node-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #c62828;
+  margin-bottom: 4px;
+}
+
+.node-id {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #8d6e63;
+  float: right;
+}
+
+.node-title {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.15rem;
+  color: #2c221e;
+  margin: 6px 0 4px 0;
+}
+
+.node-sub {
+  font-size: 0.75rem;
+  color: #5d4037;
+}
+
+/* Dynamic Line Styling */
+.sim-edge {
+  stroke: #c62828;
+  stroke-width: 2.5;
+  stroke-dasharray: 6 4;
+  transition: all 0.4s ease;
+}
+
+.sim-edge.unlocked {
+  stroke: #2e7d32;
+  stroke-dasharray: none;
+  stroke-width: 3;
+}
+
+/* Inspector Panel */
+.sim-inspector .inspector-card {
+  position: relative;
+  background: var(--paper-yellow, #fff9c4);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+}
+
+.inspector-divider {
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 12px 0 16px 0;
+}
+
+.metric-box {
+  margin-bottom: 16px;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #8d6e63;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.status-green {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+.progress-bar-track {
+  height: 10px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #2e7d32;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: #5d4037;
+  font-weight: 600;
+}
+
+.inspector-log h4 {
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  color: #2c221e;
+}
+
+.inspector-log ul {
+  list-style: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: #5d4037;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.inspector-log li {
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed rgba(0,0,0,0.1);
+}

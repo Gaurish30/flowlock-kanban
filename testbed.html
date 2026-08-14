@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowLock — Interactive DAG Simulator</title>
+  
+  <!-- Shared Style Sheets -->
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/testbed.css">
+</head>
+<body class="graph-paper-bg">
+
+  <!-- NAVIGATION HEADER -->
+  <nav class="landing-nav">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">
+        <span class="brand-icon">⚡</span>
+        <span class="brand-name">FlowLock</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="index.html#algorithm" class="nav-link">Graph Engine</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="app.html" class="nav-link">App Workspace</a>
+      </div>
+
+      <div class="nav-actions">
+        <a href="auth.html?mode=login" class="btn-walnut-login">Log In</a>
+        <a href="auth.html?mode=signup" class="btn-walnut-signup">
+          <span>Sign Up</span>
+          <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN SIMULATOR WRAPPER -->
+  <main class="sim-container">
+    
+    <!-- SIMULATOR CONTROLS BAR -->
+    <div class="sim-header-board">
+      <div class="sim-title-group">
+        <span class="sim-badge">INTERACTIVE SIMULATOR</span>
+        <h2>E-Commerce Platform Launch DAG</h2>
+        <p>Click completed upstream tasks to resolve dependencies and observe real-time cascade unlocks.</p>
+      </div>
+      <div class="sim-actions">
+        <button class="sim-btn sim-btn-reset" onclick="resetSimulator()">
+          <span>🔄 Reset Simulation</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- GRAPH CANVAS & INSPECTOR SIDEBAR -->
+    <div class="sim-workspace">
+      
+      <!-- Interactive Node Board -->
+      <div class="sim-canvas" id="simCanvas">
+        <svg class="sim-svg-layer" id="simSvg">
+          <!-- Dynamic SVG dependency lines injected by JS -->
+        </svg>
+
+        <!-- Tier 1: Prerequisites -->
+        <div class="sim-node paper-yellow" id="node-db" style="top: 40px; left: 50px;" onclick="toggleTask('db')">
+          <div class="pin red-pin"></div>
+          <div class="tape tape-left"></div>
+          <div class="node-tag" id="tag-db">⏳ IN PROGRESS</div>
+          <div class="node-id">FL-101</div>
+          <h4 class="node-title">Database Schema</h4>
+          <p class="node-sub">Prerequisite: None</p>
+        </div>
+
+        <div class="sim-node paper-yellow" id="node-auth" style="top: 260px; left: 50px;" onclick="toggleTask('auth')">
+          <div class="pin red-pin"></div>
+          <div class="tape tape-right"></div>
+          <div class="node-tag" id="tag-auth">⏳ IN PROGRESS</div>
+          <div class="node-id">FL-102</div>
+          <h4 class="node-title">Auth Endpoints</h4>
+          <p class="node-sub">Prerequisite: None</p>
+        </div>
+
+        <!-- Tier 2: Mid-tier Dependent Tasks -->
+        <div class="sim-node paper-pink is-locked" id="node-api" style="top: 150px; left: 380px;" onclick="toggleTask('api')">
+          <div class="pin yellow-pin"></div>
+          <div class="node-tag" id="tag-api">🔒 LOCKED</div>
+          <div class="node-id">FL-201</div>
+          <h4 class="node-title">Payment API Gateway</h4>
+          <p class="node-sub">Requires DB Schema & Auth</p>
+        </div>
+
+        <!-- Tier 3: Downstream Final Release -->
+        <div class="sim-node paper-blue is-locked" id="node-checkout" style="top: 150px; left: 710px;" onclick="toggleTask('checkout')">
+          <div class="pin green-pin"></div>
+          <div class="tape tape-left"></div>
+          <div class="node-tag" id="tag-checkout">🔒 LOCKED</div>
+          <div class="node-id">FL-301</div>
+          <h4 class="node-title">Checkout UI Flow</h4>
+          <p class="node-sub">Requires Payment Gateway</p>
+        </div>
+
+      </div>
+
+      <!-- Live Inspector Panel -->
+      <aside class="sim-inspector">
+        <div class="inspector-card">
+          <div class="tape tape-center"></div>
+          <h3>Graph Inspector</h3>
+          <hr class="inspector-divider">
+          
+          <div class="metric-box">
+            <span class="metric-label">Cycle Status</span>
+            <span class="metric-val status-green">✓ DAG Valid (No Loops)</span>
+          </div>
+
+          <div class="metric-box">
+            <span class="metric-label">Execution Progress</span>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="simProgress" style="width: 0%;"></div>
+            </div>
+            <span class="progress-text" id="simProgressText">0 / 4 Tasks Completed</span>
+          </div>
+
+          <div class="inspector-log">
+            <h4>Activity Stream</h4>
+            <ul id="activityLog">
+              <li>📌 Simulation initialized. Complete FL-101 and FL-102 to unlock Payment API.</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- CSS & JS INTEGRATION -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="js/testbed.js"></script>
+</body>
+</html>

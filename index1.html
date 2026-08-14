@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowLock — Dependency Management for Teams</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/landing.css" />
+</head>
+<body>
+
+  <!-- Animated Dark Background -->
+  <div class="dark-bg-animated"></div>
+
+  <!-- Glassmorphic Navbar -->
+  <div class="navbar-wrapper">
+    <nav class="navbar-glass">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">🔒</span>
+        <span class="brand-name">FlowLock</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#comparison" class="nav-link">Why FlowLock</a>
+        <a href="#stats" class="nav-link">Stats</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+      </div>
+
+      <!-- Auth & Workspace Action Container (Updated via JS when authenticated) -->
+      <div class="nav-auth-actions" id="nav-auth-container">
+        <a href="auth.html" class="btn btn-secondary btn-pill">Sign In</a>
+        <a href="auth.html" class="btn btn-primary btn-pill">Get Started</a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Hero Section -->
+  <header class="hero-section">
+    <div class="hero-container">
+      <div class="badge-pill">
+        <span class="badge-dot"></span> FlowLock v2.0 Released
+      </div>
+
+      <h1 class="hero-title">
+        Never hit a <span class="text-gradient">dependency deadlock</span> again.
+      </h1>
+
+      <p class="hero-subtitle">
+        FlowLock visually graphs cross-team task dependencies, blocks invalid workflows, and alerts you before code freezes stall your releases.
+      </p>
+
+      <div class="hero-actions" id="hero-actions-container">
+        <a href="auth.html" class="btn btn-primary btn-pill btn-lg">Start Free Trial →</a>
+        <a href="#features" class="btn btn-secondary btn-pill btn-lg">Explore Features</a>
+      </div>
+
+      <!-- Hero Interactive Preview Card -->
+      <div class="hero-preview-card">
+        <div class="preview-header">
+          <div class="window-controls">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <span class="preview-title">Project: Payment Gateway v3.2</span>
+          <span class="preview-pill">Active Graph</span>
+        </div>
+
+        <div class="preview-board-mock">
+          <div class="mock-col">
+            <div class="col-title"><span>TO DO</span> <span>3</span></div>
+            <div class="mock-card">
+              <div class="card-meta"><span>FL-102</span><span>API Core</span></div>
+              <div class="card-title">Define OAuth2 Endpoints</div>
+            </div>
+            <div class="mock-card locked">
+              <div class="card-meta"><span>FL-108</span><span>Frontend</span></div>
+              <div class="card-title">Implement Login UI</div>
+              <div class="card-blocker-alert">⚠️ Blocked by FL-102</div>
+            </div>
+          </div>
+
+          <div class="mock-col">
+            <div class="col-title"><span>IN PROGRESS</span> <span>2</span></div>
+            <div class="mock-card">
+              <div class="card-meta"><span>FL-98</span><span>DevOps</span></div>
+              <div class="card-title">Setup Staging Database</div>
+            </div>
+          </div>
+
+          <div class="mock-col">
+            <div class="col-title"><span>DONE</span> <span>8</span></div>
+            <div class="mock-card">
+              <div class="card-meta"><span>FL-88</span><span>Design</span></div>
+              <div class="card-title">User Flow Diagrams</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Trust Bar -->
+  <div class="trust-bar">
+    <div class="container">
+      <div class="trust-label">Trusted by engineering teams at</div>
+      <div class="trust-logos">
+        <span>Acme Corp</span>
+        <span>Veloce Labs</span>
+        <span>HyperScale</span>
+        <span>DataForge</span>
+        <span>Apex Systems</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <section id="features" class="section-padding">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Powerful Engine</span>
+        <h2 style="font-size: 2.25rem; font-weight: 700; margin-top: 8px;">Built for high-velocity engineering</h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="card-rounded feature-card">
+          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">🕸 Dynamic Graph Canvas</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Visualize parent-child task relationships with auto-layout Directed Acyclic Graphs (DAGs).
+          </p>
+        </div>
+
+        <div class="card-rounded feature-card">
+          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">🚫 Rigid Locking Rules</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Prevent status updates on downstream tasks until all prerequisite blocker tasks are marked Done.
+          </p>
+        </div>
+
+        <div class="card-rounded feature-card">
+          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">⚡ Real-time Cycle Detection</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Instantly catch circular dependencies (Task A → Task B → Task A) before saving sprint plans.
+          </p>
+        </div>
+
+        <div class="card-rounded feature-card">
+          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">🔔 Slack & Webhook Alerts</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Notify owners the exact second an upstream blocker task is resolved so work can resume immediately.
+          </p>
+        </div>
+
+        <div class="card-rounded feature-card">
+          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">📊 Critical Path Analysis</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Highlight long-chain task sequences automatically to predict delivery dates with zero guesswork.
+          </p>
+        </div>
+
+        <div class="card-rounded feature-card">
+          <h3 style="font-size: 1.25rem; margin-bottom: 10px;">🛡 Role-Based Access</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Ensure only project leads and authorized owners can override or bypass dependency locks.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Section -->
+  <section id="comparison" class="section-padding" style="background: rgba(18, 24, 38, 0.4);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Comparison</span>
+        <h2 style="font-size: 2.25rem; font-weight: 700; margin-top: 8px;">Traditional Boards vs. FlowLock</h2>
+      </div>
+
+      <div class="comparison-grid">
+        <div class="card-rounded card-comparison">
+          <h3 style="color: var(--danger); font-size: 1.25rem; margin-bottom: 16px;">Traditional Kanban / Jira</h3>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; color: var(--text-secondary); font-size: 0.95rem;">
+            <li>❌ Engineers start work on blocked tasks by mistake</li>
+            <li>❌ Circular dependencies hidden in buried text links</li>
+            <li>❌ Sprint delays discovered late during code freeze</li>
+            <li>❌ Manual check-ins to ask "Is API ready yet?"</li>
+          </ul>
+        </div>
+
+        <div class="card-rounded card-comparison" style="border-color: var(--primary-border);">
+          <h3 style="color: var(--success); font-size: 1.25rem; margin-bottom: 16px;">FlowLock Workspace</h3>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; color: var(--text-primary); font-size: 0.95rem;">
+            <li>✅ Tasks strictly locked until prerequisites pass</li>
+            <li>✅ Interactive visual graph highlights all blockers</li>
+            <li>✅ Automated release forecasting via critical path</li>
+            <li>✅ Immediate push alerts when blockers unlock</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section id="stats" class="section-padding">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-box card-rounded">
+          <span class="stat-number">40%</span>
+          <span class="stat-label">Reduction in sprint blocker downtime</span>
+        </div>
+        <div class="stat-box card-rounded">
+          <span class="stat-number">10x</span>
+          <span class="stat-label">Faster dependency discovery</span>
+        </div>
+        <div class="stat-box card-rounded">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Prevention of circular deadlocks</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="section-padding" style="background: rgba(18, 24, 38, 0.4);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Testimonials</span>
+        <h2 style="font-size: 2.25rem; font-weight: 700; margin-top: 8px;">Loved by Tech Leads</h2>
+      </div>
+
+      <div class="comparison-grid">
+        <div class="card-rounded testimonial-card">
+          <p style="color: var(--text-secondary); font-style: italic;">
+            "FlowLock completely eliminated the 'Wait, I thought you finished that API' conversations in our daily standups. The visual locking is brilliant."
+          </p>
+          <div class="user-meta">
+            <strong>Sarah Chen</strong>
+            <span>VP of Engineering, Veloce Labs</span>
+          </div>
+        </div>
+
+        <div class="card-rounded testimonial-card">
+          <p style="color: var(--text-secondary); font-style: italic;">
+            "Catching circular task chains before starting a 2-week sprint saved us dozens of engineering hours. We can't ship without FlowLock now."
+          </p>
+          <div class="user-meta">
+            <strong>Marcus Vance</strong>
+            <span>Lead Architect, DataForge</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="section-padding">
+    <div class="container" style="max-width: 800px;">
+      <div class="section-header">
+        <span class="section-tag">FAQ</span>
+        <h2 style="font-size: 2.25rem; font-weight: 700; margin-top: 8px;">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item card-rounded">
+          <h4>How does FlowLock handle cyclic dependencies?</h4>
+          <p>FlowLock runs graph validation algorithms in real-time. If you attempt to connect Task A to Task B when B already depends on A, the system immediately rejects the link with an error warning.</p>
+        </div>
+
+        <div class="faq-item card-rounded">
+          <h4>Can I override a locked task in emergency situations?</h4>
+          <p>Yes. Project administrators have permissions to force-unlock tasks or bypass dependency rules, with all override actions logged for audit history.</p>
+        </div>
+
+        <div class="faq-item card-rounded">
+          <h4>Does FlowLock integrate with GitHub and Jira?</h4>
+          <p>Absolutely. You can link pull requests and Jira issues directly to FlowLock nodes to automatically move task statuses when PRs are merged.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="section-padding">
+    <div class="container">
+      <div class="cta-banner card-rounded" id="cta-banner-container">
+        <h2 style="font-size: 2rem; margin-bottom: 12px;">Ready to unlock smooth deployments?</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 28px;">Set up your team dependency graph in less than 5 minutes.</p>
+        <a href="auth.html" class="btn btn-primary btn-pill btn-lg">Create Free Account →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="brand">
+          <span class="brand-icon">🔒</span>
+          <span class="brand-name">FlowLock</span>
+        </div>
+        <div class="footer-links">
+          <a href="#features">Features</a>
+          <a href="#comparison">Why FlowLock</a>
+          <a href="#faq">FAQ</a>
+          <a href="auth.html">Sign In</a>
+          <a href="app.html">Workspace</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 FlowLock Inc. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- State & Interactivity Scripts -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const isAuthenticated = localStorage.getItem('flowlock_authenticated') === 'true';
+
+      if (isAuthenticated) {
+        // 1. Update Navbar Actions
+        const navContainer = document.getElementById('nav-auth-container');
+        if (navContainer) {
+          navContainer.innerHTML = `
+            
+<a href="projects.html" class="btn btn-primary btn-pill">Launch Workspace 🚀</a>
+            <button id="btn-logout" class="btn btn-secondary btn-pill" style="margin-left: 8px;">Sign Out</button>
+          `;
+        }
+
+        // 2. Update Hero Actions
+        const heroContainer = document.getElementById('hero-actions-container');
+        if (heroContainer) {
+          heroContainer.innerHTML = `
+<a href="projects.html" class="btn btn-primary btn-pill">Launch Workspace 🚀</a>
+            <a href="#features" class="btn btn-secondary btn-pill btn-lg">Explore Features</a>
+          `;
+        }
+
+        // 3. Update Bottom CTA Banner
+        const ctaContainer = document.getElementById('cta-banner-container');
+        if (ctaContainer) {
+          ctaContainer.innerHTML = `
+            <h2 style="font-size: 2rem; margin-bottom: 12px;">Welcome back to FlowLock</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 28px;">Your dependency graphs and projects are ready.</p>
+<a href="projects.html" class="btn btn-primary btn-pill">Launch Workspace 🚀</a>          `;
+        }
+
+        // 4. Logout Handler
+        document.getElementById('btn-logout')?.addEventListener('click', () => {
+          localStorage.removeItem('flowlock_authenticated');
+          window.location.reload();
+        });
+      }
+    });
+  </script>
+</body>
+</html>
