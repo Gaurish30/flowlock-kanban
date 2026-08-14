@@ -55,9 +55,11 @@
       <div class="view-toggles">
         <button id="toggle-kanban" class="toggle-btn active">📋 Kanban View</button>
         <button id="toggle-graph" class="toggle-btn">🕸 Dependency Graph View</button>
+        <button id="btn-view-roles" class="btn btn-secondary btn-pill">👥 Team Roles</button>
         <button id="btn-add-task" class="btn btn-primary btn-pill">+ Create Task</button>
       </div>
     </div>
+
 
     <!-- Alert / Banner Container for Dependency Blocks -->
     <div id="dependency-alert" class="alert-banner hidden">
@@ -186,7 +188,25 @@
       </form>
     </div>
   </div>
-
+<!-- Workspace Subheader Actions -->
+    
+    <!-- MODAL 3: TEAM ROLES -->
+  <div id="modal-roles" class="modal-backdrop hidden">
+    <div class="modal-card card-rounded">
+      <div class="modal-header">
+        <h3>👥 Project Members & Roles</h3>
+        <button class="modal-close" id="close-roles-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="roles-list-container" class="roles-list">
+          <!-- Populated dynamically via js/app.js -->
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button type="button" class="btn btn-secondary btn-pill" id="btn-close-roles">Close</button>
+      </div>
+    </div>
+  </div>
   <script src="js/app.js"></script>
 </body>
 </html>

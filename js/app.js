@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Verify User Authentication Session
+  // 1. Session Verification
   const isAuthenticated = localStorage.getItem('flowlock_authenticated') === 'true';
   const currentUser = JSON.parse(localStorage.getItem('flowlock_current_user') || 'null');
 
@@ -8,67 +8,65 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // Update User Header Info
-  const userNameElem = document.getElementById('user-name-display');
-  const userAvatarElem = document.getElementById('user-avatar');
-  if (userNameElem) userNameElem.textContent = currentUser.name;
-  if (userAvatarElem) userAvatarElem.textContent = currentUser.name.charAt(0).toUpperCase();
+  // Header User Display
+  const userAvatar = document.getElementById('user-avatar');
+  const userNameDisplay = document.getElementById('user-name-display');
+  if (userAvatar) userAvatar.textContent = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U';
+  if (userNameDisplay) userNameDisplay.textContent = currentUser.name || 'User';
 
-  // Storage Key specific to this registered user
-  const USER_STORAGE_KEY = `flowlock_boards_${currentUser.email}`;
+  // Storage Keys
+  const GLOBAL_PROJECTS_KEY = 'flowlock_global_projects';
+  const USERS_KEY = 'flowlock_users';
 
-  // Default Board Data if new user
-  const defaultBoards = [
+  // Default Seed Data if Storage is empty
+  const defaultProjects = [
     {
       id: 'board-1',
       title: 'Payment Gateway Integration',
       desc: 'Track tasks and lock downstream dependencies automatically.',
+      ownerId: currentUser.id,
+      members: [currentUser.id],
       tasks: [
-        { id: 'FL-101', title: 'Define API Specs', desc: 'OAuth2 contract', status: 'done', dependencies: [] },
-        { id: 'FL-102', title: 'Setup Stripe Webhooks', desc: 'Listen to charge events', status: 'in-progress', dependencies: ['FL-101'] },
-        { id: 'FL-103', title: 'Frontend Checkout UI', desc: 'React components', status: 'todo', dependencies: ['FL-102'] }
-      ]
-    },
-    {
-      id: 'board-2',
-      title: 'OAuth2 Authentication Refactor',
-      desc: 'Migrate legacy sessions to JWT with Refresh Tokens.',
-      tasks: [
-        { id: 'FL-201', title: 'Redis Cache Setup', desc: 'In-memory token store', status: 'done', dependencies: [] },
-        { id: 'FL-202', title: 'Token Rotation Engine', desc: 'Refresh token handlers', status: 'in-progress', dependencies: ['FL-201'] }
+        { id: 'FL-101', title: 'Define API Contracts', desc: 'OAuth2 contract and payload definition', status: 'done', dependencies: [] },
+        { id: 'FL-102', title: 'Setup Stripe Webhooks', desc: 'Listen to customer payment events', status: 'in-progress', dependencies: ['FL-101'] },
+        { id: 'FL-103', title: 'Build Checkout Modal', desc: 'React component state and payment form', status: 'todo', dependencies: ['FL-102'] }
       ]
     }
   ];
 
-  // Load User's Private Boards
-  let userBoards = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || JSON.stringify(defaultBoards));
+  let globalProjects = JSON.parse(localStorage.getItem(GLOBAL_PROJECTS_KEY) || 'null');
+  if (!globalProjects) {
+    globalProjects = defaultProjects;
+    localStorage.setItem(GLOBAL_PROJECTS_KEY, JSON.stringify(globalProjects));
+  }
 
-  // Determine requested board ID from URL query params (e.g., app.html?board=board-1)
+  // Get requested board ID from URL params (?board=...)
   const urlParams = new URLSearchParams(window.location.search);
-  const requestedBoardId = urlParams.get('board');
+  let currentBoardId = urlParams.get('board');
 
-  let currentBoardId = requestedBoardId || userBoards[0]?.id || 'board-1';
-
-  // UI Elements
-  const boardSelector = document.getElementById('board-selector');
-  const boardTitle = document.getElementById('current-board-title');
-  const boardDesc = document.getElementById('current-board-desc');
-  const alertBanner = document.getElementById('dependency-alert');
-  const alertText = document.getElementById('alert-text');
-
-  // --- Board Switcher & Persistence ---
   function saveState() {
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userBoards));
+    localStorage.setItem(GLOBAL_PROJECTS_KEY, JSON.stringify(globalProjects));
+  }
+
+  function getAccessibleProjects() {
+    return globalProjects.filter(p => 
+      p.ownerId === currentUser.id || (p.members && p.members.includes(currentUser.id))
+    );
   }
 
   function getCurrentBoard() {
-    return userBoards.find(b => b.id === currentBoardId) || userBoards[0];
+    const accessible = getAccessibleProjects();
+    return accessible.find(b => b.id === currentBoardId) || accessible[0] || globalProjects[0];
   }
 
+  // --- Board Dropdown Header ---
+  const boardSelector = document.getElementById('board-selector');
   function renderBoardSelector() {
     if (!boardSelector) return;
     boardSelector.innerHTML = '';
-    userBoards.forEach(board => {
+    const accessible = getAccessibleProjects();
+
+    accessible.forEach(board => {
       const option = document.createElement('option');
       option.value = board.id;
       option.textContent = board.title;
@@ -77,44 +75,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function loadCurrentBoard() {
-    const board = getCurrentBoard();
-    if (!board) return;
-    currentBoardId = board.id;
-    if (boardTitle) boardTitle.textContent = board.title;
-    if (boardDesc) boardDesc.textContent = board.desc || 'No description provided.';
-    
-    renderKanbanTasks();
-    renderGraphView();
-  }
-
   boardSelector?.addEventListener('change', (e) => {
     currentBoardId = e.target.value;
-    // Update URL query string without reloading page
     const newUrl = `${window.location.pathname}?board=${currentBoardId}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
     loadCurrentBoard();
   });
 
-  // --- Dependency & Lock Logic ---
+  // --- Load Board Content ---
+  const currentBoardTitle = document.getElementById('current-board-title');
+  const currentBoardDesc = document.getElementById('current-board-desc');
+
+  function loadCurrentBoard() {
+    const board = getCurrentBoard();
+    if (!board) return;
+    currentBoardId = board.id;
+
+    if (currentBoardTitle) currentBoardTitle.textContent = board.title;
+    if (currentBoardDesc) currentBoardDesc.textContent = board.desc || 'No description provided.';
+
+    renderKanban();
+    renderGraphView();
+  }
+
+  // --- Dependency Blocker Logic ---
   function isTaskLocked(task, board) {
     if (!task.dependencies || task.dependencies.length === 0) return false;
-    // Task is locked if ANY prerequisite task is not in status "done"
     return task.dependencies.some(depId => {
       const depTask = board.tasks.find(t => t.id === depId);
       return !depTask || depTask.status !== 'done';
     });
   }
 
-  function showBlockerAlert(msg) {
+  const alertBanner = document.getElementById('dependency-alert');
+  const alertText = document.getElementById('alert-text');
+  function showAlert(msg) {
     if (!alertBanner || !alertText) return;
     alertText.textContent = msg;
     alertBanner.classList.remove('hidden');
     setTimeout(() => alertBanner.classList.add('hidden'), 4000);
   }
 
-  // --- Kanban Render Engine ---
-  function renderKanbanTasks() {
+  // --- Kanban View Renderer ---
+  function renderKanban() {
     const board = getCurrentBoard();
     if (!board) return;
 
@@ -127,9 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const counts = { 'todo': 0, 'in-progress': 0, 'review': 0, 'done': 0 };
 
-    Object.values(columns).forEach(col => {
-      if (col) col.innerHTML = '';
-    });
+    Object.values(columns).forEach(col => { if (col) col.innerHTML = ''; });
 
     board.tasks.forEach(task => {
       counts[task.status] = (counts[task.status] || 0) + 1;
@@ -146,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${locked ? '<span class="badge-locked">🔒 Blocked</span>' : '<span class="badge-ready">Ready</span>'}
         </div>
         <div class="task-title">${task.title}</div>
-        ${task.desc ? `<div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 8px;">${task.desc}</div>` : ''}
+        ${task.desc ? `<div class="task-desc">${task.desc}</div>` : ''}
         ${task.dependencies && task.dependencies.length > 0 ? `
           <div class="task-deps-list">
             ${task.dependencies.map(d => `<span class="dep-tag">Blocked by ${d}</span>`).join('')}
@@ -154,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ` : ''}
       `;
 
-      // Drag Event Handler
       card.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', task.id);
       });
@@ -164,28 +164,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Update Counter Badges
-    const countTodo = document.getElementById('count-todo');
-    const countInProgress = document.getElementById('count-in-progress');
-    const countReview = document.getElementById('count-review');
-    const countDone = document.getElementById('count-done');
-
-    if (countTodo) countTodo.textContent = counts['todo'];
-    if (countInProgress) countInProgress.textContent = counts['in-progress'];
-    if (countReview) countReview.textContent = counts['review'];
-    if (countDone) countDone.textContent = counts['done'];
+    // Update Counts
+    ['todo', 'in-progress', 'review', 'done'].forEach(st => {
+      const el = document.getElementById(`count-${st}`);
+      if (el) el.textContent = counts[st] || 0;
+    });
 
     setupDropZones();
   }
 
-  // --- Drag & Drop with Dependency Enforcement ---
   function setupDropZones() {
     const cols = document.querySelectorAll('.column-body');
     const board = getCurrentBoard();
 
     cols.forEach(col => {
       col.addEventListener('dragover', e => e.preventDefault());
-
       col.addEventListener('drop', e => {
         e.preventDefault();
         const taskId = e.dataTransfer.getData('text/plain');
@@ -194,9 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!task) return;
 
-        // Dependency Enforcer: Reject completion if prerequisite blockers exist
         if (targetStatus === 'done' && isTaskLocked(task, board)) {
-          showBlockerAlert(`⚠️ Cannot move "${task.title}" to Done. Prerequisite blocker tasks must be finished first!`);
+          showAlert(`⚠️ Task "${task.title}" is locked. Complete all prerequisite blocker tasks before moving to Done!`);
           return;
         }
 
@@ -207,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- View Toggle Engine (Kanban vs Graph) ---
+  // --- Toggle Views (Kanban vs Graph) ---
   const toggleKanban = document.getElementById('toggle-kanban');
   const toggleGraph = document.getElementById('toggle-graph');
   const kanbanView = document.getElementById('kanban-view');
@@ -228,7 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderGraphView();
   });
 
-  // --- Dependency Graph Renderer ---
+  // --- Dependency Visualizer Engine ---
+  // --- Enhanced Multi-Dependency Graph Engine ---
   function renderGraphView() {
     const board = getCurrentBoard();
     const nodesLayer = document.getElementById('graph-nodes-layer');
@@ -236,60 +229,142 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!nodesLayer || !svg) return;
 
     nodesLayer.innerHTML = '';
-    svg.innerHTML = '';
+    svg.innerHTML = `
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#6366f1"/>
+        </marker>
+        <marker id="arrow-locked" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+        </marker>
+      </defs>
+    `;
 
-    const positions = [
-      { x: 40, y: 180 },
-      { x: 300, y: 100 },
-      { x: 300, y: 260 },
-      { x: 560, y: 180 },
-      { x: 800, y: 180 }
-    ];
+    if (!board || !board.tasks || board.tasks.length === 0) return;
 
-    board.tasks.forEach((task, idx) => {
-      const pos = positions[idx % positions.length];
-      const locked = isTaskLocked(task, board);
+    // 1. Calculate Graph Depth (Layers) for each task based on dependency chains
+    const depths = {};
+    function getTaskDepth(taskId, visited = new Set()) {
+      if (visited.has(taskId)) return 0; // Prevent cycle loops
+      visited.add(taskId);
+      
+      const task = board.tasks.find(t => t.id === taskId);
+      if (!task || !task.dependencies || task.dependencies.length === 0) return 0;
 
-      const node = document.createElement('div');
-      node.className = `graph-node ${task.status === 'done' ? 'done' : ''} ${locked ? 'locked' : ''}`;
-      node.style.left = `${pos.x}px`;
-      node.style.top = `${pos.y}px`;
-      node.id = `node-${task.id}`;
+      const maxParentDepth = Math.max(...task.dependencies.map(depId => getTaskDepth(depId, new Set(visited))));
+      return maxParentDepth + 1;
+    }
 
-      node.innerHTML = `
-        <strong style="display:block; font-size:0.8rem; color:var(--text-secondary);">${task.id}</strong>
-        <span style="font-weight:600; font-size:0.875rem;">${task.title}</span>
-        <div style="margin-top:6px; font-size:0.75rem; font-weight: 600; color: ${locked ? 'var(--warning)' : 'var(--success)'}">
-          ${locked ? '🔒 Blocked' : task.status.toUpperCase()}
-        </div>
-      `;
+    board.tasks.forEach(t => {
+      depths[t.id] = getTaskDepth(t.id);
+    });
 
-      nodesLayer.appendChild(node);
+    // 2. Group tasks into Layer Columns
+    const layers = {};
+    board.tasks.forEach(task => {
+      const depth = depths[task.id];
+      if (!layers[depth]) layers[depth] = [];
+      layers[depth].push(task);
+    });
+
+    // 3. Render Nodes with Dynamic Coordinates
+    const nodeCoords = {};
+    const colWidth = 260;
+    const rowHeight = 110;
+    const startX = 40;
+    const startY = 40;
+
+    Object.keys(layers).forEach(layerIndex => {
+      const tasksInLayer = layers[layerIndex];
+      tasksInLayer.forEach((task, rowIndex) => {
+        const posX = startX + parseInt(layerIndex) * colWidth;
+        const posY = startY + rowIndex * rowHeight;
+
+        // Store precise bounding connection points (Right edge for output, Left edge for input)
+        nodeCoords[task.id] = {
+          outX: posX + 200, // right side of box
+          outY: posY + 40,  // center vertical
+          inX: posX,        // left side of box
+          inY: posY + 40,   // center vertical
+          posX,
+          posY
+        };
+
+        const locked = isTaskLocked(task, board);
+        const node = document.createElement('div');
+        node.className = `graph-node ${task.status === 'done' ? 'done' : ''} ${locked ? 'locked' : ''}`;
+        node.style.left = `${posX}px`;
+        node.style.top = `${posY}px`;
+
+        node.innerHTML = `
+          <span style="font-size:0.75rem; font-weight:700; color:var(--text-tertiary); display:block;">${task.id}</span>
+          <span style="font-size:0.875rem; font-weight:600; color:var(--text-primary); display:block; margin-top:2px;">${task.title}</span>
+          <span style="font-size:0.7rem; font-weight:700; color:${locked ? 'var(--warning)' : 'var(--success)'}; display:block; margin-top:6px;">
+            ${locked ? '🔒 BLOCKED' : task.status.toUpperCase()}
+          </span>
+        `;
+
+        nodesLayer.appendChild(node);
+      });
+    });
+
+    // 4. Draw Smooth Curved Bezier Paths for Multiple Dependencies
+    board.tasks.forEach(task => {
+      if (task.dependencies && task.dependencies.length > 0) {
+        const targetCoord = nodeCoords[task.id];
+        if (!targetCoord) return;
+
+        task.dependencies.forEach((depId, idx) => {
+          const sourceCoord = nodeCoords[depId];
+          if (!sourceCoord) return;
+
+          // Offset incoming arrows slightly on multi-dependency nodes so lines don't stack on top of each other
+          const verticalOffset = (idx - (task.dependencies.length - 1) / 2) * 12;
+          const targetY = targetCoord.inY + verticalOffset;
+
+          // Bezier control points for smooth curving lines
+          const deltaX = Math.abs(targetCoord.inX - sourceCoord.outX) / 2;
+          const cp1X = sourceCoord.outX + deltaX;
+          const cp1Y = sourceCoord.outY;
+          const cp2X = targetCoord.inX - deltaX;
+          const cp2Y = targetY;
+
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', `M ${sourceCoord.outX} ${sourceCoord.outY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${targetCoord.inX} ${targetY}`);
+
+          const isLocked = isTaskLocked(task, board);
+          path.setAttribute('stroke', isLocked ? '#f59e0b' : '#6366f1');
+          path.setAttribute('stroke-width', '2');
+          path.setAttribute('fill', 'none');
+          if (isLocked) path.setAttribute('stroke-dasharray', '4 4');
+          path.setAttribute('marker-end', isLocked ? 'url(#arrow-locked)' : 'url(#arrow)');
+
+          svg.appendChild(path);
+        });
+      }
     });
   }
 
-  // --- Modal Controls: Create Task ---
-  const taskModal = document.getElementById('modal-task');
-  const boardModal = document.getElementById('modal-board');
+  // --- Modal: Task Creation ---
+  const modalTask = document.getElementById('modal-task');
   const depsSelect = document.getElementById('task-dependencies');
 
   document.getElementById('btn-add-task')?.addEventListener('click', () => {
     const board = getCurrentBoard();
-    if (!depsSelect) return;
-    depsSelect.innerHTML = '';
-    
-    board.tasks.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t.id;
-      opt.textContent = `${t.id} — ${t.title}`;
-      depsSelect.appendChild(opt);
-    });
-    
-    taskModal?.classList.remove('hidden');
+    if (depsSelect) {
+      depsSelect.innerHTML = '';
+      board.tasks.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.id} — ${t.title}`;
+        depsSelect.appendChild(opt);
+      });
+    }
+    modalTask?.classList.remove('hidden');
   });
 
-  document.getElementById('close-task-modal')?.addEventListener('click', () => taskModal?.classList.add('hidden'));
-  document.getElementById('btn-cancel-task')?.addEventListener('click', () => taskModal?.classList.add('hidden'));
+  document.getElementById('close-task-modal')?.addEventListener('click', () => modalTask?.classList.add('hidden'));
+  document.getElementById('btn-cancel-task')?.addEventListener('click', () => modalTask?.classList.add('hidden'));
 
   document.getElementById('form-create-task')?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -297,58 +372,90 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleInput = document.getElementById('task-title');
     const descInput = document.getElementById('task-desc');
 
-    const title = titleInput ? titleInput.value.trim() : '';
-    const desc = descInput ? descInput.value.trim() : '';
     const selectedDeps = depsSelect ? Array.from(depsSelect.selectedOptions).map(o => o.value) : [];
 
     const newTask = {
       id: `FL-${Math.floor(100 + Math.random() * 900)}`,
-      title,
-      desc,
+      title: titleInput.value.trim(),
+      desc: descInput ? descInput.value.trim() : '',
       status: 'todo',
       dependencies: selectedDeps
     };
 
     board.tasks.push(newTask);
     saveState();
-    taskModal?.classList.add('hidden');
+    modalTask?.classList.add('hidden');
     document.getElementById('form-create-task')?.reset();
     loadCurrentBoard();
   });
 
-  // --- Modal Controls: Create New Project Board ---
-  document.getElementById('btn-create-board')?.addEventListener('click', () => boardModal?.classList.remove('hidden'));
-  document.getElementById('close-board-modal')?.addEventListener('click', () => boardModal?.classList.add('hidden'));
-  document.getElementById('btn-cancel-board')?.addEventListener('click', () => boardModal?.classList.add('hidden'));
+  // --- Modal: New Project Board ---
+  const modalBoard = document.getElementById('modal-board');
+  document.getElementById('btn-create-board')?.addEventListener('click', () => modalBoard?.classList.remove('hidden'));
+  document.getElementById('close-board-modal')?.addEventListener('click', () => modalBoard?.classList.add('hidden'));
+  document.getElementById('btn-cancel-board')?.addEventListener('click', () => modalBoard?.classList.add('hidden'));
 
   document.getElementById('form-create-board')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const titleInput = document.getElementById('board-title');
     const descInput = document.getElementById('board-desc');
 
-    const title = titleInput ? titleInput.value.trim() : '';
-    const desc = descInput ? descInput.value.trim() : '';
-
     const newBoard = {
       id: `board-${Date.now()}`,
-      title,
-      desc,
+      title: titleInput.value.trim(),
+      desc: descInput ? descInput.value.trim() : '',
+      ownerId: currentUser.id,
+      members: [currentUser.id],
       tasks: []
     };
 
-    userBoards.push(newBoard);
-    currentBoardId = newBoard.id;
+    globalProjects.push(newBoard);
     saveState();
-    renderBoardSelector();
-    
-    // Update URL query string
-    const newUrl = `${window.location.pathname}?board=${currentBoardId}`;
-    window.history.pushState({ path: newUrl }, '', newUrl);
-
-    loadCurrentBoard();
-    boardModal?.classList.add('hidden');
+    currentBoardId = newBoard.id;
+    modalBoard?.classList.add('hidden');
     document.getElementById('form-create-board')?.reset();
+    renderBoardSelector();
+    loadCurrentBoard();
   });
+
+  // --- Modal: View Team Roles ---
+  const modalRoles = document.getElementById('modal-roles');
+  const rolesContainer = document.getElementById('roles-list-container');
+
+  document.getElementById('btn-view-roles')?.addEventListener('click', () => {
+    const board = getCurrentBoard();
+    const allUsers = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    if (!rolesContainer) return;
+
+    rolesContainer.innerHTML = '';
+    const memberIds = board.members || [board.ownerId];
+
+    memberIds.forEach(mId => {
+      const user = allUsers.find(u => u.id === mId) || { name: 'Project Member', email: mId };
+      const isOwner = mId === board.ownerId;
+
+      const card = document.createElement('div');
+      card.className = 'role-member-card';
+      card.innerHTML = `
+        <div class="role-user-info">
+          <div class="role-avatar">${user.name ? user.name.charAt(0).toUpperCase() : 'U'}</div>
+          <div class="role-details">
+            <span class="role-name">${user.name}</span>
+            <span class="role-email">${user.email}</span>
+          </div>
+        </div>
+        <span class="role-badge ${isOwner ? 'owner' : 'member'}">
+          ${isOwner ? '👑 Owner' : '👥 Member'}
+        </span>
+      `;
+      rolesContainer.appendChild(card);
+    });
+
+    modalRoles?.classList.remove('hidden');
+  });
+
+  document.getElementById('close-roles-modal')?.addEventListener('click', () => modalRoles?.classList.add('hidden'));
+  document.getElementById('btn-close-roles')?.addEventListener('click', () => modalRoles?.classList.add('hidden'));
 
   // --- Sign Out ---
   document.getElementById('btn-app-logout')?.addEventListener('click', () => {
@@ -357,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = 'index.html';
   });
 
-  // Boot Application State
+  // Initial Load Call
   renderBoardSelector();
   loadCurrentBoard();
 });

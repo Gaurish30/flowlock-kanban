@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const panelLogin = document.getElementById('panel-login');
   const panelRegister = document.getElementById('panel-register');
 
-  // --- Helper Functions for LocalStorage "Database" ---
   const getUsersFromStorage = () => {
     return JSON.parse(localStorage.getItem('flowlock_users') || '[]');
   };
@@ -20,25 +19,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return users.find((u) => u.email.toLowerCase() === email.toLowerCase());
   };
 
-  // --- Tab Switcher Logic ---
   function switchTab(target) {
     clearErrors();
     if (target === 'login') {
-      tabLogin.classList.add('active');
-      tabLogin.setAttribute('aria-selected', 'true');
-      tabRegister.classList.remove('active');
-      tabRegister.setAttribute('aria-selected', 'false');
+      tabLogin?.classList.add('active');
+      tabLogin?.setAttribute('aria-selected', 'true');
+      tabRegister?.classList.remove('active');
+      tabRegister?.setAttribute('aria-selected', 'false');
 
-      panelLogin.classList.add('active');
-      panelRegister.classList.remove('active');
+      panelLogin?.classList.add('active');
+      panelRegister?.classList.remove('active');
     } else {
-      tabRegister.classList.add('active');
-      tabRegister.setAttribute('aria-selected', 'true');
-      tabLogin.classList.remove('active');
-      tabLogin.setAttribute('aria-selected', 'false');
+      tabRegister?.classList.add('active');
+      tabRegister?.setAttribute('aria-selected', 'true');
+      tabLogin?.classList.remove('active');
+      tabLogin?.setAttribute('aria-selected', 'false');
 
-      panelRegister.classList.add('active');
-      panelLogin.classList.remove('active');
+      panelRegister?.classList.add('active');
+      panelLogin?.classList.remove('active');
     }
   }
 
@@ -49,9 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.form-input').forEach((input) => input.classList.remove('invalid'));
   }
 
-  // ==========================================
-  // 1. SIGN IN FORM SUBMISSION
-  // ==========================================
+  // --- SIGN IN ---
   panelLogin?.addEventListener('submit', (e) => {
     e.preventDefault();
     clearErrors();
@@ -65,47 +61,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = passwordInput.value;
     let isValid = true;
 
-    // Basic format checks
     if (!email || !emailInput.checkValidity()) {
       emailInput.classList.add('invalid');
-      emailError.textContent = 'Please enter a valid email address.';
+      if (emailError) emailError.textContent = 'Please enter a valid email.';
       isValid = false;
     }
 
     if (!password) {
       passwordInput.classList.add('invalid');
-      passwordError.textContent = 'Password is required.';
+      if (passwordError) passwordError.textContent = 'Password is required.';
       isValid = false;
     }
 
     if (!isValid) return;
 
-    // Check credentials against LocalStorage database
     const existingUser = findUserByEmail(email);
 
     if (!existingUser) {
       emailInput.classList.add('invalid');
-      emailError.textContent = 'No account found with this email. Please sign up first.';
+      if (emailError) emailError.textContent = 'No account found. Please sign up first.';
       return;
     }
 
     if (existingUser.password !== password) {
       passwordInput.classList.add('invalid');
-      passwordError.textContent = 'Incorrect password. Please try again.';
+      if (passwordError) passwordError.textContent = 'Incorrect password.';
       return;
     }
 
-    // Authenticate and save current active user profile
+    // Save Active Session with User ID
     localStorage.setItem('flowlock_authenticated', 'true');
-    localStorage.setItem('flowlock_current_user', JSON.stringify({ name: existingUser.name, email: existingUser.email }));
+    localStorage.setItem('flowlock_current_user', JSON.stringify({
+      id: existingUser.id,
+      name: existingUser.name,
+      email: existingUser.email
+    }));
 
-    // Redirect to landing page with active session
-    window.location.href = 'index.html';
+    window.location.href = 'projects.html';
   });
 
-  // ==========================================
-  // 2. CREATE ACCOUNT FORM SUBMISSION
-  // ==========================================
+  // --- SIGN UP ---
   panelRegister?.addEventListener('submit', (e) => {
     e.preventDefault();
     clearErrors();
@@ -113,8 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = document.getElementById('reg-name');
     const emailInput = document.getElementById('reg-email');
     const passwordInput = document.getElementById('reg-password');
-    const emailError = document.getElementById('reg-email-error');
     const nameError = document.getElementById('reg-name-error');
+    const emailError = document.getElementById('reg-email-error');
     const passwordError = document.getElementById('reg-password-error');
 
     const name = nameInput.value.trim();
@@ -124,40 +119,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!name) {
       nameInput.classList.add('invalid');
-      nameError.textContent = 'Name is required.';
+      if (nameError) nameError.textContent = 'Name is required.';
       isValid = false;
     }
 
     if (!email || !emailInput.checkValidity()) {
       emailInput.classList.add('invalid');
-      emailError.textContent = 'Valid work email required.';
+      if (emailError) emailError.textContent = 'Valid email required.';
       isValid = false;
     }
 
     if (!password || password.length < 8) {
       passwordInput.classList.add('invalid');
-      passwordError.textContent = 'Must be at least 8 characters.';
+      if (passwordError) passwordError.textContent = 'Must be at least 8 characters.';
       isValid = false;
     }
 
     if (!isValid) return;
 
-    // Check if email already exists
     if (findUserByEmail(email)) {
       emailInput.classList.add('invalid');
-      emailError.textContent = 'An account with this email already exists. Sign in instead.';
+      if (emailError) emailError.textContent = 'Account with this email already exists.';
       return;
     }
 
-    // Save new user account to LocalStorage
-    const newUser = { name, email, password, createdAt: new Date().toISOString() };
+    // Generate Unique User ID
+    const userId = `usr_${Date.now()}`;
+    const newUser = { id: userId, name, email, password, createdAt: new Date().toISOString() };
     saveUserToStorage(newUser);
 
-    // Authenticate and save active user profile
+    // Set Active Session
     localStorage.setItem('flowlock_authenticated', 'true');
-    localStorage.setItem('flowlock_current_user', JSON.stringify({ name: newUser.name, email: newUser.email }));
+    localStorage.setItem('flowlock_current_user', JSON.stringify({ id: userId, name, email }));
 
-    // Redirect back to home
-    window.location.href = 'index.html';
+    window.location.href = 'projects.html';
   });
 });
