@@ -57,6 +57,9 @@
         <button id="toggle-graph" class="toggle-btn">🕸 Dependency Graph View</button>
         <button id="btn-view-roles" class="btn btn-secondary btn-pill">👥 Team Roles</button>
         <button id="btn-add-task" class="btn btn-primary btn-pill">+ Create Task</button>
+  <button id="btn-add-milestone" class="btn btn-secondary">
+    <span>🏁</span> Set Final Milestone
+  </button>
       </div>
     </div>
 
@@ -118,12 +121,27 @@
     </div>
 
     <!-- VIEW 2: VISUAL DEPENDENCY GRAPH -->
+    <!-- Updated Graph View with Sidebar in app.html -->
     <div id="graph-view" class="view-panel">
-      <div class="graph-card card-rounded">
-        <div class="graph-canvas-container" id="graph-canvas-container">
-          <svg id="dependency-svg" class="dependency-svg"></svg>
-          <div id="graph-nodes-layer" class="graph-nodes-layer"></div>
+      <div class="graph-view-wrapper">
+        
+        <!-- Main Dependency Graph Canvas -->
+        <div id="graph-canvas-container" class="graph-canvas-container">
+          <svg id="dependency-svg"></svg>
+          <div id="graph-nodes-layer"></div>
         </div>
+
+        <!-- Side Area for Standalone / Isolated Tasks -->
+        <aside class="graph-sidebar">
+          <div class="sidebar-header">
+            <h4>Standalone Tasks</h4>
+            <p class="field-hint">Tasks with no dependencies or downstream connections.</p>
+          </div>
+          <div id="isolated-nodes-layer" class="isolated-nodes-list">
+            <!-- Dynamically populated via renderGraphView() -->
+          </div>
+        </aside>
+
       </div>
     </div>
 
@@ -147,12 +165,13 @@
           <textarea id="task-desc" class="form-input" rows="3" placeholder="Brief details about this work unit..."></textarea>
         </div>
 
+       <!-- Replacement for Blocker Tasks Selection in app.html -->
         <div class="form-group">
-          <label for="task-dependencies">Blocker Tasks (Dependencies)</label>
-          <p class="field-hint">This task cannot be completed until selected prerequisite tasks are "Done".</p>
-          <select id="task-dependencies" class="form-input" multiple style="height: 90px;">
-            <!-- Populated dynamically with active project tasks -->
-          </select>
+          <label>Blocker Tasks (Dependencies)</label>
+          <p class="field-hint">Select all prerequisite tasks that must be completed before this task can start.</p>
+          <div id="task-dependencies-container" class="dependency-checkbox-list">
+            <!-- Dynamically populated with styled checkboxes via js/app.js -->
+          </div>
         </div>
 
         <div class="modal-actions">
