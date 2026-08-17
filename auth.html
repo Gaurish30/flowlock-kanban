@@ -3,158 +3,866 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>FlowLock — Sign In & Register</title>
-  
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
-  <!-- Stylesheet Links -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Existing Landing Styles -->
   <link rel="stylesheet" href="css/landing.css" />
+
+  <!-- Auth Styles -->
   <link rel="stylesheet" href="css/auth.css" />
 </head>
-<body>
 
-  <!-- Animated Dark Background --> 
-  <div class="dark-bg-animated"></div>
+<body class="auth-page">
 
-  <!-- Top Navigation Header -->
-  <header class="auth-header">
-    <a href="index.html" class="brand">
-      <span class="brand-icon">🔒</span>
-      <span class="brand-name">FlowLock</span>
-    </a>
-    <a href="index.html" class="btn btn-secondary btn-pill">← Back to Home</a>
-  </header>
+  <!-- ================= HEADER ================= -->
+ <header class="auth-header">
 
-  <!-- Central Auth Card Container -->
-  <main class="auth-container">
-    <div class="auth-card card-rounded">
-      
-      <!-- Tab Switcher Header -->
-      <div class="auth-tabs" role="tablist">
-        <button id="tab-login" class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-login">
-          Sign In
-        </button>
-        <button id="tab-register" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-register">
-          Create Account
-        </button>
-        <div class="tab-slider"></div>
-      </div>
+  <a href="index.html" class="auth-brand">
 
-      <!-- FORM 1: SIGN IN -->
-      <form id="panel-login" class="auth-form active" role="tabpanel" aria-labelledby="tab-login" novalidate>
-        <div class="form-header">
-          <h2>Welcome back</h2>
-          <p>Access your dependency graph workspace</p>
-        </div>
+    <span class="brand-lightning">
+      ⚡
+    </span>
 
-        <div class="form-group">
-          <label for="login-email">Work Email</label>
-          <input 
-            type="email" 
-            id="login-email" 
-            class="form-input" 
-            placeholder="alex@company.com" 
-            required 
-            autocomplete="email"
-          />
-          <span class="error-msg" id="login-email-error">Please enter a valid email address.</span>
-        </div>
+    <div class="brand-text">
 
-        <div class="form-group">
-          <div class="label-row">
-            <label for="login-password">Password</label>
-            <a href="#" class="forgot-link">Forgot?</a>
-          </div>
-          <input 
-            type="password" 
-            id="login-password" 
-            class="form-input" 
-            placeholder="••••••••••••" 
-            required 
-            autocomplete="current-password"
-          />
-          <span class="error-msg" id="login-password-error">Password is required.</span>
-        </div>
+      <span class="brand-flow">
+        FlowLock
+      </span>
 
-        <button type="submit" class="btn btn-primary btn-pill btn-full">
-          Sign In to FlowLock →
-        </button>
-
-        <div class="divider">
-          <span>OR</span>
-        </div>
-
-        <!-- Social Auth Quick Actions -->
-        <div class="social-auth">
-          <button type="button" class="btn btn-secondary btn-full btn-social">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            Continue with GitHub
-          </button>
-        </div>
-      </form>
-
-      <!-- FORM 2: CREATE ACCOUNT -->
-      <form id="panel-register" class="auth-form" role="tabpanel" aria-labelledby="tab-register" novalidate>
-        <div class="form-header">
-          <h2>Get started free</h2>
-          <p>Prevent dependency deadlocks in minutes</p>
-        </div>
-
-        <div class="form-group">
-          <label for="reg-name">Full Name</label>
-          <input 
-            type="text" 
-            id="reg-name" 
-            class="form-input" 
-            placeholder="Alex Rivera" 
-            required 
-            autocomplete="name"
-          />
-          <span class="error-msg" id="reg-name-error">Name is required.</span>
-        </div>
-
-        <div class="form-group">
-          <label for="reg-email">Work Email</label>
-          <input 
-            type="email" 
-            id="reg-email" 
-            class="form-input" 
-            placeholder="alex@company.com" 
-            required 
-            autocomplete="email"
-          />
-          <span class="error-msg" id="reg-email-error">Valid work email required.</span>
-        </div>
-
-        <div class="form-group">
-          <label for="reg-password">Password</label>
-          <input 
-            type="password" 
-            id="reg-password" 
-            class="form-input" 
-            placeholder="Min. 8 characters" 
-            required 
-            minlength="8"
-            autocomplete="new-password"
-          />
-          <span class="error-msg" id="reg-password-error">Must be at least 8 characters.</span>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-pill btn-full">
-          Create Free Account →
-        </button>
-
-        <p class="terms-text">
-          By signing up, you agree to FlowLock's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-        </p>
-      </form>
+      <span class="brand-engine">
+        Graph Engine
+      </span>
 
     </div>
+
+  </a>
+
+
+  <a href="index.html" class="back-home">
+
+    <span>←</span>
+
+    Back to Home
+
+  </a>
+
+</header>
+
+
+  <!-- ================= AUTH AREA ================= -->
+  <main class="auth-container">
+
+    <div class="auth-scene">
+
+
+      <!-- =====================================================
+           LEFT STICKY NOTE
+      ====================================================== -->
+      <div class="board-note board-note-left" aria-hidden="true">
+
+        <span class="note-pin"></span>
+
+        <span class="note-id">
+          FL-201
+        </span>
+
+        <span class="note-status success">
+          ✓ READY
+        </span>
+
+        <p>
+          Identity<br />
+          Verification
+        </p>
+
+      </div>
+
+
+      <!-- LEFT DEPENDENCY LINE -->
+      <div
+        class="dependency-line line-left"
+        aria-hidden="true"
+      ></div>
+
+
+
+      <!-- =====================================================
+           EXTRA HAND-DRAWN DOODLES
+      ====================================================== -->
+
+      <div
+        class="sketch-layer"
+        aria-hidden="true"
+      >
+
+
+        <!-- Curved Arrow LEFT -->
+
+        <svg
+          class="sketch-arrow sketch-arrow-left"
+          viewBox="0 0 200 120"
+        >
+
+          <path
+            d="M15 95 C40 30, 110 25, 165 65"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-dasharray="5 4"
+          />
+
+          <path
+            d="M153 55 L167 66 L151 70"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+        </svg>
+
+
+
+        <!-- Curved Arrow RIGHT -->
+
+        <svg
+          class="sketch-arrow sketch-arrow-right"
+          viewBox="0 0 190 110"
+        >
+
+          <path
+            d="M170 20 C120 10, 65 30, 30 75"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M31 59 L28 77 L45 72"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+
+        </svg>
+
+
+
+        <!-- =====================================================
+             CHECKBOX DOODLE
+        ====================================================== -->
+
+        <div class="checkbox-doodle">
+
+          <div class="doodle-title">
+            today
+          </div>
+
+
+          <div class="doodle-check-row">
+
+            <span class="doodle-box checked">
+              ✓
+            </span>
+
+            <span>
+              dependencies
+            </span>
+
+          </div>
+
+
+          <div class="doodle-check-row">
+
+            <span class="doodle-box checked">
+              ✓
+            </span>
+
+            <span>
+              auth flow
+            </span>
+
+          </div>
+
+
+          <div class="doodle-check-row">
+
+            <span class="doodle-box">
+            </span>
+
+            <span>
+              ship it!
+            </span>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             PAPERCLIP
+        ====================================================== -->
+
+        <div class="paperclip-doodle"></div>
+
+
+
+        <!-- =====================================================
+             EXTRA TAPE
+        ====================================================== -->
+
+        <div class="corner-tape-doodle"></div>
+
+
+
+        <!-- =====================================================
+             MINI FLOWCHART
+        ====================================================== -->
+
+        <div class="mini-flowchart">
+
+          <div class="flow-node flow-node-a">
+            Login
+          </div>
+
+
+          <div class="flow-sketch-line line-one"></div>
+
+
+          <div class="flow-node flow-node-b">
+            Verify
+          </div>
+
+
+          <div class="flow-sketch-line line-two"></div>
+
+
+          <div class="flow-node flow-node-c">
+            Board ✓
+          </div>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             SMALL HANDWRITTEN TEXT
+        ====================================================== -->
+
+        <span class="sketch-text sketch-text-one">
+          follow the flow →
+        </span>
+
+
+        <span class="sketch-text sketch-text-two">
+          no blocker!
+        </span>
+
+
+        <span class="sketch-star star-one">
+          ✦
+        </span>
+
+
+        <span class="sketch-star star-two">
+          ✦
+        </span>
+
+
+      </div>
+
+
+
+      <!-- =====================================================
+           MAIN AUTH CARD
+      ====================================================== -->
+
+      <section class="auth-card" id="auth-card">
+
+
+        <!-- Tape -->
+
+        <div
+          class="paper-tape"
+          aria-hidden="true"
+        ></div>
+
+
+
+        <!-- Push Pin -->
+
+        <div
+          class="main-pin"
+          aria-hidden="true"
+        ></div>
+
+
+
+        <!-- Tiny ID -->
+
+        <div class="paper-id">
+          FL • AUTH
+        </div>
+
+
+
+        <!-- =====================================================
+             TAB SWITCHER
+        ====================================================== -->
+
+        <div
+          class="auth-tabs"
+          role="tablist"
+        >
+
+
+          <button
+            id="tab-login"
+            class="tab-btn active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="panel-login"
+          >
+
+            Sign In
+
+          </button>
+
+
+
+          <button
+            id="tab-register"
+            class="tab-btn"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-register"
+          >
+
+            Create Account
+
+          </button>
+
+
+        </div>
+
+
+
+        <!-- =====================================================
+             LOGIN FORM
+        ====================================================== -->
+
+        <form
+          id="panel-login"
+          class="auth-form active"
+          role="tabpanel"
+          aria-labelledby="tab-login"
+          novalidate
+        >
+
+
+          <div class="form-header">
+
+
+            <div class="auth-status">
+
+              ● ACCESS NODE
+
+            </div>
+
+
+            <h2>
+
+              Welcome Back!
+
+            </h2>
+
+
+            <p>
+
+              Sign in and continue building
+              without blockers.
+
+            </p>
+
+
+          </div>
+
+
+
+          <!-- EMAIL -->
+
+          <div class="form-group">
+
+
+            <label for="login-email">
+
+              Work Email
+
+            </label>
+
+
+            <input
+              type="email"
+              id="login-email"
+              class="form-input"
+              placeholder="alex@company.com"
+              required
+              autocomplete="email"
+            />
+
+
+            <span
+              class="error-msg"
+              id="login-email-error"
+            >
+
+              Please enter a valid email address.
+
+            </span>
+
+
+          </div>
+
+
+
+          <!-- PASSWORD -->
+
+          <div class="form-group">
+
+
+            <div class="label-row">
+
+
+              <label for="login-password">
+
+                Password
+
+              </label>
+
+
+              <a
+                href="forgot.html"
+                class="forgot-link"
+              >
+
+                Forgot?
+
+              </a>
+
+
+            </div>
+
+
+
+            <input
+              type="password"
+              id="login-password"
+              class="form-input"
+              placeholder="••••••••••••"
+              required
+              autocomplete="current-password"
+            />
+
+
+            <span
+              class="error-msg"
+              id="login-password-error"
+            >
+
+              Password is required.
+
+            </span>
+
+
+          </div>
+
+
+
+          <!-- PRIMARY LOGIN BUTTON -->
+
+          <button
+            type="submit"
+            class="auth-primary-btn"
+          >
+
+            Sign In to FlowLock
+
+            <span>
+              →
+            </span>
+
+          </button>
+
+
+
+          <!-- DIVIDER -->
+
+          <div class="divider">
+
+            <span>
+              OR
+            </span>
+
+          </div>
+
+
+
+          <!-- =====================================================
+               SOCIAL LOGIN
+          ====================================================== -->
+
+          <div class="social-auth">
+
+
+
+            <!-- GitHub -->
+
+            <button
+              type="button"
+              id="github-auth-btn"
+              class="github-btn social-provider-btn"
+            >
+
+
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+
+                <path
+                  d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+                />
+
+              </svg>
+
+
+              Continue with GitHub
+
+
+            </button>
+
+
+
+            <!-- Google -->
+
+            <button
+              type="button"
+              id="google-auth-btn"
+              class="google-btn social-provider-btn"
+            >
+
+
+              <span class="google-mark">
+
+                G
+
+              </span>
+
+
+              Continue with Google
+
+
+            </button>
+
+
+
+            <!-- OAuth Info -->
+
+            <p
+              id="oauth-note"
+              class="oauth-note"
+              aria-live="polite"
+            ></p>
+
+
+          </div>
+
+
+        </form>
+
+
+
+        <!-- =====================================================
+             CREATE ACCOUNT FORM
+        ====================================================== -->
+
+        <form
+          id="panel-register"
+          class="auth-form"
+          role="tabpanel"
+          aria-labelledby="tab-register"
+          novalidate
+        >
+
+
+          <div class="form-header">
+
+
+            <div class="auth-status">
+
+              ● NEW WORKSPACE MEMBER
+
+            </div>
+
+
+            <h2>
+
+              Join FlowLock!
+
+            </h2>
+
+
+            <p>
+
+              Create your account and start
+              managing task dependencies.
+
+            </p>
+
+
+          </div>
+
+
+
+          <!-- NAME -->
+
+          <div class="form-group">
+
+
+            <label for="reg-name">
+
+              Full Name
+
+            </label>
+
+
+            <input
+              type="text"
+              id="reg-name"
+              class="form-input"
+              placeholder="Alex Rivera"
+              required
+              autocomplete="name"
+            />
+
+
+            <span
+              class="error-msg"
+              id="reg-name-error"
+            >
+
+              Name is required.
+
+            </span>
+
+
+          </div>
+
+
+
+          <!-- EMAIL -->
+
+          <div class="form-group">
+
+
+            <label for="reg-email">
+
+              Work Email
+
+            </label>
+
+
+            <input
+              type="email"
+              id="reg-email"
+              class="form-input"
+              placeholder="alex@company.com"
+              required
+              autocomplete="email"
+            />
+
+
+            <span
+              class="error-msg"
+              id="reg-email-error"
+            >
+
+              Valid work email required.
+
+            </span>
+
+
+          </div>
+
+
+
+          <!-- PASSWORD -->
+
+          <div class="form-group">
+
+
+            <label for="reg-password">
+
+              Password
+
+            </label>
+
+
+            <input
+              type="password"
+              id="reg-password"
+              class="form-input"
+              placeholder="Min. 8 characters"
+              required
+              minlength="8"
+              autocomplete="new-password"
+            />
+
+
+            <span
+              class="error-msg"
+              id="reg-password-error"
+            >
+
+              Must be at least 8 characters.
+
+            </span>
+
+
+          </div>
+
+
+
+          <!-- SIGNUP BUTTON -->
+
+          <button
+            type="submit"
+            class="auth-primary-btn"
+          >
+
+            Create Free Account
+
+            <span>
+              →
+            </span>
+
+          </button>
+
+
+
+          <!-- TERMS -->
+
+          <p class="terms-text">
+
+            By signing up, you agree to FlowLock's
+
+            <a href="#">
+              Terms of Service
+            </a>
+
+            and
+
+            <a href="#">
+              Privacy Policy
+            </a>.
+
+          </p>
+
+
+        </form>
+
+
+
+        <!-- HANDWRITTEN FOOTER -->
+
+        <div class="paper-footer">
+
+          dependencies checked ✓
+
+        </div>
+
+
+      </section>
+
+
+
+      <!-- =====================================================
+           RIGHT DEPENDENCY LINE
+      ====================================================== -->
+
+      <div
+        class="dependency-line line-right"
+        aria-hidden="true"
+      ></div>
+
+
+
+      <!-- =====================================================
+           RIGHT STICKY NOTE
+      ====================================================== -->
+
+      <div
+        class="board-note board-note-right"
+        aria-hidden="true"
+      >
+
+
+        <span class="note-pin">
+        </span>
+
+
+        <span class="note-id">
+
+          FL-202
+
+        </span>
+
+
+        <span class="note-status waiting">
+
+          🔒 SECURED
+
+        </span>
+
+
+        <p>
+
+          Your<br />
+          Workspace
+
+        </p>
+
+
+      </div>
+
+
+    </div>
+
+
   </main>
 
+
   <script src="js/auth.js"></script>
+
+
 </body>
 </html>
