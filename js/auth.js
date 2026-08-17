@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const authCard = document.getElementById('auth-card');
   const tabLogin = document.getElementById('tab-login');
   const tabRegister = document.getElementById('tab-register');
   const panelLogin = document.getElementById('panel-login');
@@ -20,28 +21,43 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function switchTab(target) {
-    clearErrors();
-    if (target === 'login') {
-      tabLogin?.classList.add('active');
-      tabLogin?.setAttribute('aria-selected', 'true');
-      tabRegister?.classList.remove('active');
-      tabRegister?.setAttribute('aria-selected', 'false');
+  clearErrors();
 
-      panelLogin?.classList.add('active');
-      panelRegister?.classList.remove('active');
-    } else {
-      tabRegister?.classList.add('active');
-      tabRegister?.setAttribute('aria-selected', 'true');
-      tabLogin?.classList.remove('active');
-      tabLogin?.setAttribute('aria-selected', 'false');
+  if (target === 'login') {
 
-      panelRegister?.classList.add('active');
-      panelLogin?.classList.remove('active');
-    }
+    tabLogin?.classList.add('active');
+    tabLogin?.setAttribute('aria-selected', 'true');
+
+    tabRegister?.classList.remove('active');
+    tabRegister?.setAttribute('aria-selected', 'false');
+
+    panelLogin?.classList.add('active');
+    panelRegister?.classList.remove('active');
+
+    /* Compact card for login */
+    authCard?.classList.remove('register-mode');
+    authCard?.classList.add('login-mode');
+
+  } else {
+
+    tabRegister?.classList.add('active');
+    tabRegister?.setAttribute('aria-selected', 'true');
+
+    tabLogin?.classList.remove('active');
+    tabLogin?.setAttribute('aria-selected', 'false');
+
+    panelRegister?.classList.add('active');
+    panelLogin?.classList.remove('active');
+
+    /* Slightly larger card for signup */
+    authCard?.classList.remove('login-mode');
+    authCard?.classList.add('register-mode');
   }
+}
 
   tabLogin?.addEventListener('click', () => switchTab('login'));
   tabRegister?.addEventListener('click', () => switchTab('register'));
+  authCard?.classList.add('login-mode');
 
   function clearErrors() {
     document.querySelectorAll('.form-input').forEach((input) => input.classList.remove('invalid'));
@@ -153,5 +169,163 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('flowlock_current_user', JSON.stringify({ id: userId, name, email }));
 
     window.location.href = 'projects.html';
+
+      /* ==========================================================
+     FLOWLOCK ENTRANCE ANIMATIONS
+     GSAP-LIKE STAGGER USING WEB ANIMATIONS API
+     ========================================================== */
+
+  function runEntranceAnimations() {
+
+    const header = document.querySelector('.auth-header');
+    const card = document.querySelector('.auth-card');
+
+    if (header) {
+      header.animate(
+        [
+          {
+            opacity: 0,
+            transform: 'translateX(-50%) translateY(-25px)'
+          },
+          {
+            opacity: 1,
+            transform: 'translateX(-50%) translateY(0)'
+          }
+        ],
+        {
+          duration: 650,
+          easing: 'cubic-bezier(.22,1,.36,1)',
+          fill: 'both'
+        }
+      );
+    }
+
+
+    if (card) {
+      card.animate(
+        [
+          {
+            opacity: 0,
+            transform: 'translateY(35px) rotate(-2deg) scale(.94)'
+          },
+          {
+            opacity: 1,
+            transform: 'translateY(0) rotate(-0.4deg) scale(1)'
+          }
+        ],
+        {
+          duration: 850,
+          delay: 130,
+          easing: 'cubic-bezier(.16,1,.3,1)',
+          fill: 'both'
+        }
+      );
+    }
+
+
+    const notes = document.querySelectorAll('.board-note');
+
+    notes.forEach((note, index) => {
+
+      const direction =
+        index % 2 === 0 ? '-35px' : '35px';
+
+      note.animate(
+        [
+          {
+            opacity: 0,
+            transform: `translateX(${direction}) rotate(0deg) scale(.86)`
+          },
+          {
+            opacity: 1,
+            transform: ''
+          }
+        ],
+        {
+          duration: 700,
+          delay: 300 + index * 130,
+          easing: 'cubic-bezier(.34,1.56,.64,1)',
+          fill: 'both'
+        }
+      );
+
+    });
+
+
+    const sketchElements =
+      document.querySelectorAll(`
+        .sketch-arrow,
+        .checkbox-doodle,
+        .paperclip-doodle,
+        .corner-tape-doodle,
+        .mini-flowchart,
+        .sketch-text,
+        .sketch-star
+      `);
+
+
+    sketchElements.forEach((element, index) => {
+
+      element.animate(
+        [
+          {
+            opacity: 0,
+            transform:
+              'translateY(15px) scale(.75) rotate(-5deg)'
+          },
+          {
+            opacity: 1
+          }
+        ],
+        {
+          duration: 540,
+          delay: 500 + index * 80,
+          easing: 'cubic-bezier(.34,1.56,.64,1)',
+          fill: 'both'
+        }
+      );
+
+    });
+
+  }
+
+
+  runEntranceAnimations();
+
+
+  /* ==========================================================
+     SOCIAL AUTH PLACEHOLDERS
+     ========================================================== */
+
+  const googleAuthButton =
+    document.getElementById('google-auth-btn');
+
+  const githubAuthButton =
+    document.getElementById('github-auth-btn');
+
+  const oauthNote =
+    document.getElementById('oauth-note');
+
+
+  function showOAuthMessage(provider) {
+
+    if (!oauthNote) return;
+
+    oauthNote.textContent =
+      `${provider} sign-in is ready for OAuth configuration.`;
+
+    oauthNote.classList.add('visible');
+
+  }
+
+
+  googleAuthButton?.addEventListener('click', () => {
+    showOAuthMessage('Google');
+  });
+
+
+  githubAuthButton?.addEventListener('click', () => {
+    showOAuthMessage('GitHub');
+  });
   });
 });
