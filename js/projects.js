@@ -3,46 +3,58 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ==========================================================
      FLOWLOCK PROJECT PORTFOLIO
 
-     JavaScript concepts used:
-     - Variables
-     - Functions
-     - Arrays
-     - Objects
-     - Array methods
+     Component 1 concepts:
+     - const / let
+     - functions
+     - arrays
+     - objects
+     - find()
+     - filter()
+     - forEach()
      - DOM manipulation
-     - Event handling
-     - Form validation
-     - Local Storage
+     - event handling
+     - form validation
+     - localStorage
      - JSON
-     - Template literals
+     - template literals
      ========================================================== */
 
 
   /* ==========================================================
-     AUTHENTICATION CHECK
+     AUTHENTICATION
      ========================================================== */
 
   const isAuthenticated =
-    localStorage.getItem('flowlock_authenticated') === 'true';
+    localStorage.getItem(
+      'flowlock_authenticated'
+    ) === 'true';
 
 
   const currentUser =
     JSON.parse(
-      localStorage.getItem('flowlock_current_user') || 'null'
+      localStorage.getItem(
+        'flowlock_current_user'
+      ) || 'null'
     );
 
 
-  if (!isAuthenticated || !currentUser) {
+  if (
+    !isAuthenticated ||
+    !currentUser
+  ) {
 
-    window.location.href = 'auth.html';
+    window.location.href =
+      'auth.html?mode=login';
 
     return;
+
   }
 
 
-  /* ==========================================================
-     LEGACY USER SUPPORT
-     ========================================================== */
+  /*
+   * Legacy support for old users
+   * created before IDs existed.
+   */
 
   if (!currentUser.id) {
 
@@ -52,44 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     localStorage.setItem(
       'flowlock_current_user',
-      JSON.stringify(currentUser)
+      JSON.stringify(
+        currentUser
+      )
     );
 
   }
 
-
-  /* ==========================================================
-     USER DETAILS
-     ========================================================== */
-
-  const userNameDisplay =
-    document.getElementById('user-name-display');
-
-
-  const userAvatar =
-    document.getElementById('user-avatar');
-
-
-  if (userNameDisplay) {
-
-    userNameDisplay.textContent =
-      currentUser.name || 'User';
-
-  }
-
-
-  if (userAvatar) {
-
-    const firstLetter =
-      (currentUser.name || 'U')
-        .charAt(0)
-        .toUpperCase();
-
-
-    userAvatar.textContent =
-      firstLetter;
-
-  }
 
 
   /* ==========================================================
@@ -104,18 +85,64 @@ document.addEventListener('DOMContentLoaded', () => {
     'flowlock_users';
 
 
-  const DEMO_CLEANUP_KEY =
-    'flowlock_demo_project_removed_v1';
+  /*
+   * Every user gets their own
+   * remembered workspace.
+   *
+   * Example:
+   *
+   * flowlock_last_project_usr_123
+   */
+
+  const LAST_PROJECT_KEY =
+    `flowlock_last_project_${currentUser.id}`;
+
 
 
   /* ==========================================================
-     GET PROJECT DATA
+     USER DETAILS
+     ========================================================== */
 
-     IMPORTANT:
-     We DO NOT create any default project.
+  const userNameDisplay =
+    document.getElementById(
+      'user-name-display'
+    );
 
-     New users start with:
-     []
+
+  const userAvatar =
+    document.getElementById(
+      'user-avatar'
+    );
+
+
+  if (userNameDisplay) {
+
+    userNameDisplay.textContent =
+      currentUser.name ||
+      'User';
+
+  }
+
+
+  if (userAvatar) {
+
+    userAvatar.textContent =
+
+      (
+        currentUser.name ||
+        'U'
+      )
+
+        .charAt(0)
+
+        .toUpperCase();
+
+  }
+
+
+
+  /* ==========================================================
+     LOAD PROJECTS
      ========================================================== */
 
   function loadProjects() {
@@ -130,86 +157,28 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
 
-      return Array.isArray(saved)
+      return Array.isArray(
+        saved
+      )
         ? saved
         : [];
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error(
-        'Unable to read FlowLock projects:',
+        'Unable to read projects:',
         error
       );
 
 
       return [];
+
     }
 
   }
 
-
-  let globalProjects =
-    loadProjects();
-
-
-  /* ==========================================================
-     REMOVE OLD TEST PROJECT
-
-     This cleans the demo project that your previous JS stored:
-
-     board-1
-     Payment Gateway Integration
-
-     This runs only once.
-     ========================================================== */
-
-  function removeOldDemoProject() {
-
-    const cleanupAlreadyDone =
-      localStorage.getItem(
-        DEMO_CLEANUP_KEY
-      ) === 'true';
-
-
-    if (cleanupAlreadyDone) {
-
-      return;
-    }
-
-
-    const oldLength =
-      globalProjects.length;
-
-
-    globalProjects =
-      globalProjects.filter((project) => {
-
-        const isOldDemo =
-          project.id === 'board-1' &&
-          project.title ===
-            'Payment Gateway Integration';
-
-
-        return !isOldDemo;
-
-      });
-
-
-    if (
-      globalProjects.length !== oldLength
-    ) {
-
-      saveGlobalProjects();
-
-    }
-
-
-    localStorage.setItem(
-      DEMO_CLEANUP_KEY,
-      'true'
-    );
-
-  }
 
 
   /* ==========================================================
@@ -219,14 +188,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function saveGlobalProjects() {
 
     localStorage.setItem(
+
       GLOBAL_PROJECTS_KEY,
-      JSON.stringify(globalProjects)
+
+      JSON.stringify(
+        globalProjects
+      )
+
     );
 
   }
 
-
-  removeOldDemoProject();
 
 
   /* ==========================================================
@@ -245,44 +217,149 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
 
-      return Array.isArray(users)
+      return Array.isArray(
+        users
+      )
         ? users
         : [];
 
-    } catch (error) {
+    }
+
+    catch (error) {
+
+      console.error(
+        'Unable to read users:',
+        error
+      );
+
 
       return [];
+
     }
 
   }
 
 
+
   /* ==========================================================
-     ESCAPE USER TEXT BEFORE HTML OUTPUT
+     GLOBAL PROJECT ARRAY
      ========================================================== */
 
-  function escapeHTML(value = '') {
-
-    const div =
-      document.createElement('div');
+  let globalProjects =
+    loadProjects();
 
 
-    div.textContent =
-      String(value);
+
+  /* ==========================================================
+     REMOVE OLD TEST PROJECT
+
+     Older version automatically created:
+
+     board-1
+     Payment Gateway Integration
+
+     This version checks every time.
+     ========================================================== */
+
+  function removeOldDemoProject() {
+
+    const oldLength =
+      globalProjects.length;
 
 
-    return div.innerHTML;
+    globalProjects =
+      globalProjects.filter(
+        (project) => {
+
+          return !(
+
+            project.id ===
+              'board-1'
+
+            &&
+
+            project.title ===
+              'Payment Gateway Integration'
+
+          );
+
+        }
+      );
+
+
+    /*
+     * Save only if something
+     * was removed.
+     */
+
+    if (
+      globalProjects.length !==
+      oldLength
+    ) {
+
+      saveGlobalProjects();
+
+    }
+
+
+    /*
+     * Also remove it from
+     * remembered workspace.
+     */
+
+    if (
+
+      localStorage.getItem(
+        LAST_PROJECT_KEY
+      ) === 'board-1'
+
+    ) {
+
+      localStorage.removeItem(
+        LAST_PROJECT_KEY
+      );
+
+    }
 
   }
 
 
-  /* ==========================================================
-     GET PROJECTS ACCESSIBLE TO THIS USER
+  removeOldDemoProject();
 
-     User can see project when:
-     1. User owns it
+
+
+  /* ==========================================================
+     SAFE HTML OUTPUT
+     ========================================================== */
+
+  function escapeHTML(
+    value = ''
+  ) {
+
+    const helper =
+      document.createElement(
+        'div'
+      );
+
+
+    helper.textContent =
+      String(value);
+
+
+    return helper.innerHTML;
+
+  }
+
+
+
+  /* ==========================================================
+     PROJECTS ACCESSIBLE TO CURRENT USER
+
+     Project visible when:
+
+     1. user owns it
      OR
-     2. User was invited
+     2. user was invited
      ========================================================== */
 
   function getUserAccessibleProjects() {
@@ -290,21 +367,30 @@ document.addEventListener('DOMContentLoaded', () => {
     return globalProjects.filter(
       (project) => {
 
+
         const isOwner =
+
           project.ownerId ===
           currentUser.id;
 
 
         const isMember =
+
           Array.isArray(
             project.members
-          ) &&
+          )
+
+          &&
+
           project.members.includes(
             currentUser.id
           );
 
 
-        return isOwner || isMember;
+        return (
+          isOwner ||
+          isMember
+        );
 
       }
     );
@@ -312,14 +398,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
+
   /* ==========================================================
      PROJECT METRICS
      ========================================================== */
 
-  function getProjectMetrics(project) {
+  function getProjectMetrics(
+    project
+  ) {
 
     const tasks =
-      Array.isArray(project.tasks)
+
+      Array.isArray(
+        project.tasks
+      )
+
         ? project.tasks
         : [];
 
@@ -327,6 +420,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const total =
       tasks.length;
 
+
+
+    /* -------------------------
+       Empty project
+       ------------------------- */
 
     if (total === 0) {
 
@@ -340,78 +438,140 @@ document.addEventListener('DOMContentLoaded', () => {
 
         percent: 0,
 
-        health: 'ON TRACK'
+        health:
+          'ON TRACK'
 
       };
+
     }
 
 
-    /* completed tasks */
+
+    /* -------------------------
+       Completed tasks
+       ------------------------- */
 
     const done =
+
       tasks.filter(
-        (task) =>
-          task.status === 'done'
+        (task) => {
+
+          return (
+            task.status ===
+            'done'
+          );
+
+        }
       ).length;
 
 
-    /* blocked tasks */
+
+    /* -------------------------
+       Blocked tasks
+       ------------------------- */
 
     const blocked =
-      tasks.filter((task) => {
 
-        if (
-          !Array.isArray(task.dependencies) ||
-          task.dependencies.length === 0
-        ) {
-
-          return false;
-        }
+      tasks.filter(
+        (task) => {
 
 
-        return task.dependencies.some(
-          (dependencyId) => {
+          if (
 
-            const dependencyTask =
-              tasks.find(
-                (taskItem) =>
-                  taskItem.id ===
-                  dependencyId
-              );
+            !Array.isArray(
+              task.dependencies
+            )
 
+            ||
 
-            return (
-              !dependencyTask ||
-              dependencyTask.status !== 'done'
-            );
+            task.dependencies.length ===
+              0
+
+          ) {
+
+            return false;
 
           }
-        );
 
-      }).length;
 
+
+          return task.dependencies.some(
+            (dependencyId) => {
+
+
+              const dependencyTask =
+
+                tasks.find(
+                  (taskItem) => {
+
+                    return (
+                      taskItem.id ===
+                      dependencyId
+                    );
+
+                  }
+                );
+
+
+              return (
+
+                !dependencyTask
+
+                ||
+
+                dependencyTask.status !==
+                  'done'
+
+              );
+
+            }
+          );
+
+        }
+      ).length;
+
+
+
+    /* -------------------------
+       Progress %
+       ------------------------- */
 
     const percent =
       Math.round(
-        (done / total) * 100
+        (
+          done /
+          total
+        ) * 100
       );
 
+
+
+    /* -------------------------
+       Health status
+       ------------------------- */
 
     let health =
       'ON TRACK';
 
 
-    if (percent === 100) {
+    if (
+      percent === 100
+    ) {
 
       health =
         'COMPLETED';
 
-    } else if (blocked > 0) {
+    }
+
+    else if (
+      blocked > 0
+    ) {
 
       health =
         'BLOCKED';
 
     }
+
 
 
     return {
@@ -429,6 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
   }
+
 
 
   /* ==========================================================
@@ -453,8 +614,10 @@ document.addEventListener('DOMContentLoaded', () => {
       0;
 
 
+
     projects.forEach(
       (project) => {
+
 
         const metrics =
           getProjectMetrics(
@@ -477,6 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
 
+
     const totalProjectsElement =
       document.getElementById(
         'stat-total-projects'
@@ -495,7 +659,10 @@ document.addEventListener('DOMContentLoaded', () => {
       );
 
 
-    if (totalProjectsElement) {
+
+    if (
+      totalProjectsElement
+    ) {
 
       totalProjectsElement.textContent =
         projects.length;
@@ -503,7 +670,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    if (blockedElement) {
+
+    if (
+      blockedElement
+    ) {
 
       blockedElement.textContent =
         blockedTasks;
@@ -511,7 +681,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
     const completionRate =
+
       totalTasks > 0
 
         ? Math.round(
@@ -524,7 +696,10 @@ document.addEventListener('DOMContentLoaded', () => {
         : 0;
 
 
-    if (completionElement) {
+
+    if (
+      completionElement
+    ) {
 
       completionElement.textContent =
         `${completionRate}%`;
@@ -532,6 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
   }
+
 
 
   /* ==========================================================
@@ -550,8 +726,9 @@ document.addEventListener('DOMContentLoaded', () => {
     null;
 
 
+
   /* ==========================================================
-     OPEN CREATE PROJECT MODAL
+     CREATE PROJECT MODAL
      ========================================================== */
 
   const newProjectModal =
@@ -560,11 +737,15 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
 
+
   function openCreateModal() {
 
-    if (!newProjectModal) {
+    if (
+      !newProjectModal
+    ) {
 
       return;
+
     }
 
 
@@ -580,24 +761,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     setTimeout(
-      () => titleInput?.focus(),
+      () => {
+
+        if (
+          titleInput
+        ) {
+
+          titleInput.focus();
+
+        }
+
+      },
+
       50
     );
 
   }
 
 
-  /* ==========================================================
-     CLOSE CREATE PROJECT MODAL
-     ========================================================== */
 
   function closeCreateModal() {
 
-    newProjectModal?.classList.add(
-      'hidden'
-    );
+    if (
+      newProjectModal
+    ) {
+
+      newProjectModal.classList.add(
+        'hidden'
+      );
+
+    }
 
   }
+
+
+
+  /* ==========================================================
+     LANDING PAGE CREATE WORKSPACE
+
+     Landing page sends:
+
+     projects.html?create=1
+
+     This automatically opens the modal.
+     ========================================================== */
+
+  if (
+
+    window.location.search.includes(
+      'create=1'
+    )
+
+  ) {
+
+    openCreateModal();
+
+  }
+
 
 
   /* ==========================================================
@@ -609,7 +829,14 @@ document.addEventListener('DOMContentLoaded', () => {
     type = 'empty'
   ) {
 
-    if (type === 'search') {
+
+    /* -------------------------
+       Search empty state
+       ------------------------- */
+
+    if (
+      type === 'search'
+    ) {
 
       container.innerHTML = `
 
@@ -619,17 +846,24 @@ document.addEventListener('DOMContentLoaded', () => {
             🔍
           </span>
 
+
           <h2>
             No Matching Projects
           </h2>
 
+
           <p>
+
             We couldn't find a project matching
             your search or current filter.
+
           </p>
 
+
           <span class="empty-scribble">
+
             try another filter ↗
+
           </span>
 
         </div>
@@ -638,8 +872,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
       return;
+
     }
 
+
+
+    /* -------------------------
+       No projects
+       ------------------------- */
 
     container.innerHTML = `
 
@@ -649,43 +889,49 @@ document.addEventListener('DOMContentLoaded', () => {
           📌
         </span>
 
+
         <h2>
           Your Board is Empty
         </h2>
 
+
         <p>
+
           You haven't created a FlowLock project yet.
+
           Create your first project and start building
           your dependency graph from scratch.
+
         </p>
 
+
         <button
+
           type="button"
+
           id="empty-create-project"
+
           class="empty-create-btn"
+
         >
+
           + Create First Project
+
         </button>
 
+
         <span class="empty-scribble">
+
           no demo tasks • this space is yours ✓
+
         </span>
 
       </div>
 
     `;
 
-
-    document
-      .getElementById(
-        'empty-create-project'
-      )
-      ?.addEventListener(
-        'click',
-        openCreateModal
-      );
-
   }
+
 
 
   /* ==========================================================
@@ -694,7 +940,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderProjects() {
 
+
     updateSummaryStats();
+
 
 
     const container =
@@ -703,9 +951,12 @@ document.addEventListener('DOMContentLoaded', () => {
       );
 
 
-    if (!container) {
+    if (
+      !container
+    ) {
 
       return;
+
     }
 
 
@@ -713,16 +964,21 @@ document.addEventListener('DOMContentLoaded', () => {
       '';
 
 
+
     const accessibleProjects =
       getUserAccessibleProjects();
 
 
-    /* ========================================
-       USER HAS ZERO PROJECTS
-       ======================================== */
+
+    /* ========================================================
+       NO PROJECTS
+       ======================================================== */
 
     if (
-      accessibleProjects.length === 0
+
+      accessibleProjects.length ===
+      0
+
     ) {
 
       renderEmptyState(
@@ -732,16 +988,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
       return;
+
     }
 
 
-    /* ========================================
+
+    /* ========================================================
        SEARCH + FILTER
-       ======================================== */
+       ======================================================== */
 
     const filteredProjects =
+
       accessibleProjects.filter(
         (project) => {
+
 
           const metrics =
             getProjectMetrics(
@@ -750,35 +1010,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
           const title =
-            project.title || '';
+            project.title ||
+            '';
 
 
           const description =
-            project.desc || '';
+            project.desc ||
+            '';
 
 
           const query =
             searchQuery.toLowerCase();
 
 
+
           const matchesSearch =
 
             title
               .toLowerCase()
-              .includes(query)
+              .includes(
+                query
+              )
 
             ||
 
             description
               .toLowerCase()
-              .includes(query);
+              .includes(
+                query
+              );
 
 
-          if (!matchesSearch) {
+
+          if (
+            !matchesSearch
+          ) {
 
             return false;
+
           }
 
+
+
+          /* Active */
 
           if (
             currentFilter ===
@@ -786,10 +1060,15 @@ document.addEventListener('DOMContentLoaded', () => {
           ) {
 
             return (
-              metrics.percent < 100
+              metrics.percent <
+              100
             );
+
           }
 
+
+
+          /* Blocked */
 
           if (
             currentFilter ===
@@ -800,8 +1079,12 @@ document.addEventListener('DOMContentLoaded', () => {
               metrics.health ===
               'BLOCKED'
             );
+
           }
 
+
+
+          /* Completed */
 
           if (
             currentFilter ===
@@ -809,9 +1092,12 @@ document.addEventListener('DOMContentLoaded', () => {
           ) {
 
             return (
-              metrics.percent === 100
+              metrics.percent ===
+              100
             );
+
           }
+
 
 
           return true;
@@ -820,12 +1106,16 @@ document.addEventListener('DOMContentLoaded', () => {
       );
 
 
-    /* ========================================
+
+    /* ========================================================
        FILTER FOUND NOTHING
-       ======================================== */
+       ======================================================== */
 
     if (
-      filteredProjects.length === 0
+
+      filteredProjects.length ===
+      0
+
     ) {
 
       renderEmptyState(
@@ -835,15 +1125,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
       return;
+
     }
 
 
-    /* ========================================
+
+    /* ========================================================
        CREATE PROJECT CARDS
-       ======================================== */
+       ======================================================== */
 
     filteredProjects.forEach(
       (project) => {
+
 
         const metrics =
           getProjectMetrics(
@@ -852,44 +1145,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         const isOwner =
+
           project.ownerId ===
           currentUser.id;
 
-
-        const card =
-          document.createElement(
-            'article'
-          );
-
-
-        card.className =
-          'project-card';
-
-
-        let badgeClass =
-          'health-on-track';
-
-
-        if (
-          metrics.health ===
-          'BLOCKED'
-        ) {
-
-          badgeClass =
-            'health-blocked';
-
-        }
-
-
-        if (
-          metrics.health ===
-          'COMPLETED'
-        ) {
-
-          badgeClass =
-            'health-completed';
-
-        }
 
 
         const title =
@@ -906,115 +1165,249 @@ document.addEventListener('DOMContentLoaded', () => {
           );
 
 
+
         const memberCount =
-          Array.isArray(project.members)
+
+          Array.isArray(
+            project.members
+          )
 
             ? project.members.length
 
             : 1;
 
 
-card.innerHTML = `
-  <div>
 
-    <div class="project-card-header">
-
-      <div>
-        <div class="project-title">
-          ${title}
-        </div>
-
-        <div class="project-role">
-          ${isOwner ? '👑 Owner' : '👥 Member'}
-          •
-          ${memberCount}
-          ${memberCount === 1 ? 'member' : 'members'}
-        </div>
-      </div>
-
-      <span class="health-badge ${badgeClass}">
-        ${metrics.health}
-      </span>
-
-    </div>
+        let badgeClass =
+          'health-on-track';
 
 
-    <p class="project-desc">
-      ${description}
-    </p>
+
+        if (
+          metrics.health ===
+          'BLOCKED'
+        ) {
+
+          badgeClass =
+            'health-blocked';
+
+        }
 
 
-    <div class="project-progress-wrapper">
 
-      <div class="progress-header">
-        <span>Progress</span>
-        <span>${metrics.percent}%</span>
-      </div>
+        if (
+          metrics.health ===
+          'COMPLETED'
+        ) {
 
-      <div class="progress-track">
-        <div
-          class="progress-fill"
-          style="width: ${metrics.percent}%"
-        ></div>
-      </div>
+          badgeClass =
+            'health-completed';
 
-    </div>
+        }
 
 
-    <div class="project-meta-pills">
 
-      <span>
-        📋 ${metrics.total} Tasks
-      </span>
-
-      <span>
-        🔒 ${metrics.blocked} Blocked
-      </span>
-
-      <span>
-        ✓ ${metrics.done} Done
-      </span>
-
-    </div>
-
-  </div>
+        const card =
+          document.createElement(
+            'article'
+          );
 
 
-  <div class="project-actions">
-
-    <a
-      href="app.html?board=${encodeURIComponent(project.id)}"
-      class="launch-project"
-    >
-      Launch →
-    </a>
+        card.className =
+          'project-card';
 
 
-    <button
-      type="button"
-      class="invite-project btn-invite-member"
-      data-invite-id="${project.id}"
-    >
-      + Invite
-    </button>
+
+        card.innerHTML = `
+
+          <div>
 
 
-    ${
-      isOwner
-        ? `
-          <button
-            type="button"
-            class="btn-delete-project"
-            data-delete-id="${project.id}"
-          >
-            Delete
-          </button>
-        `
-        : ''
-    }
+            <div class="project-card-header">
 
-  </div>
-`;
+
+              <div>
+
+
+                <div class="project-title">
+
+                  ${title}
+
+                </div>
+
+
+                <div class="project-role">
+
+                  ${
+                    isOwner
+                      ? '👑 Owner'
+                      : '👥 Member'
+                  }
+
+                  •
+
+                  ${memberCount}
+
+                  ${
+                    memberCount === 1
+                      ? 'member'
+                      : 'members'
+                  }
+
+                </div>
+
+
+              </div>
+
+
+              <span
+                class="health-badge ${badgeClass}"
+              >
+
+                ${metrics.health}
+
+              </span>
+
+
+            </div>
+
+
+
+            <p class="project-desc">
+
+              ${description}
+
+            </p>
+
+
+
+            <div class="project-progress-wrapper">
+
+
+              <div class="progress-header">
+
+                <span>
+                  Progress
+                </span>
+
+                <span>
+                  ${metrics.percent}%
+                </span>
+
+              </div>
+
+
+
+              <div class="progress-track">
+
+                <div
+
+                  class="progress-fill"
+
+                  style="
+                    width:
+                    ${metrics.percent}%;
+                  "
+
+                ></div>
+
+              </div>
+
+
+            </div>
+
+
+
+            <div class="project-meta-pills">
+
+              <span>
+                📋 ${metrics.total} Tasks
+              </span>
+
+              <span>
+                🔒 ${metrics.blocked} Blocked
+              </span>
+
+              <span>
+                ✓ ${metrics.done} Done
+              </span>
+
+            </div>
+
+
+          </div>
+
+
+
+          <div class="project-actions">
+
+
+            <a
+
+              href="app.html?board=${encodeURIComponent(
+                project.id
+              )}"
+
+              class="launch-project"
+
+              data-project-id="${project.id}"
+
+            >
+
+              Launch →
+
+            </a>
+
+
+
+            <button
+
+              type="button"
+
+              class="
+                invite-project
+                btn-invite-member
+              "
+
+              data-invite-id="${project.id}"
+
+            >
+
+              + Invite
+
+            </button>
+
+
+
+            ${
+              isOwner
+
+                ? `
+
+                    <button
+
+                      type="button"
+
+                      class="btn-delete-project"
+
+                      data-delete-id="${project.id}"
+
+                    >
+
+                      Delete
+
+                    </button>
+
+                  `
+
+                : ''
+            }
+
+
+          </div>
+
+        `;
+
 
 
         container.appendChild(
@@ -1024,95 +1417,266 @@ card.innerHTML = `
       }
     );
 
-
-    addProjectCardListeners();
-
   }
+
 
 
   /* ==========================================================
-     PROJECT CARD EVENT LISTENERS
+     PROJECT CARD EVENTS
+
+     Event delegation is used here.
+
+     This fixes the previous problem where buttons
+     sometimes stopped working after renderProjects()
+     recreated the cards.
      ========================================================== */
 
-  function addProjectCardListeners() {
-
-  // ================= DELETE PROJECT =================
-
-  document
-    .querySelectorAll('.btn-delete-project')
-    .forEach((button) => {
-
-      button.addEventListener('click', (event) => {
-
-        const idToDelete =
-          event.currentTarget.dataset.deleteId.trim();
+  const projectsContainer =
+    document.getElementById(
+      'projects-container'
+    );
 
 
-        const project =
-          globalProjects.find(
-            (item) => item.id === idToDelete
+
+  if (
+    projectsContainer
+  ) {
+
+    projectsContainer.addEventListener(
+      'click',
+      (event) => {
+
+
+
+        /* ======================================================
+           CREATE FIRST PROJECT
+           ====================================================== */
+
+        const emptyCreateButton =
+
+          event.target.closest(
+            '#empty-create-project'
           );
 
 
-        if (!project) {
+        if (
+          emptyCreateButton
+        ) {
 
-          console.error(
-            'Project not found:',
+          openCreateModal();
+
+          return;
+
+        }
+
+
+
+        /* ======================================================
+           LAUNCH PROJECT
+
+           Remember this workspace.
+           ====================================================== */
+
+        const launchLink =
+
+          event.target.closest(
+            '.launch-project'
+          );
+
+
+        if (
+          launchLink
+        ) {
+
+
+          const projectId =
+            launchLink.dataset.projectId;
+
+
+          if (
+            projectId
+          ) {
+
+            localStorage.setItem(
+
+              LAST_PROJECT_KEY,
+
+              projectId
+
+            );
+
+          }
+
+
+          /*
+           * Do NOT use preventDefault().
+           *
+           * The link should still open app.html.
+           */
+
+          return;
+
+        }
+
+
+
+        /* ======================================================
+           DELETE PROJECT
+           ====================================================== */
+
+        const deleteButton =
+
+          event.target.closest(
+            '.btn-delete-project'
+          );
+
+
+        if (
+          deleteButton
+        ) {
+
+
+          const idToDelete =
+            deleteButton
+              .dataset
+              .deleteId;
+
+
+
+          const project =
+
+            globalProjects.find(
+              (item) => {
+
+                return (
+                  item.id ===
+                  idToDelete
+                );
+
+              }
+            );
+
+
+
+          if (
+            !project
+          ) {
+
+            console.error(
+              'Project not found:',
+              idToDelete
+            );
+
+
+            return;
+
+          }
+
+
+
+          const confirmDelete =
+
+            confirm(
+
+              `Are you sure you want to delete "${project.title}"?`
+
+            );
+
+
+
+          if (
+            !confirmDelete
+          ) {
+
+            return;
+
+          }
+
+
+
+          globalProjects =
+
+            globalProjects.filter(
+              (item) => {
+
+                return (
+                  item.id !==
+                  idToDelete
+                );
+
+              }
+            );
+
+
+
+          /*
+           * If this was the workspace shown as
+           * Continue Workspace on index.html,
+           * remove it.
+           */
+
+          if (
+
+            localStorage.getItem(
+              LAST_PROJECT_KEY
+            ) ===
             idToDelete
-          );
+
+          ) {
+
+            localStorage.removeItem(
+              LAST_PROJECT_KEY
+            );
+
+          }
+
+
+
+          saveGlobalProjects();
+
+
+          renderProjects();
+
 
           return;
+
         }
 
 
-        const confirmDelete =
-          confirm(
-            `Are you sure you want to delete "${project.title}"?`
+
+        /* ======================================================
+           INVITE MEMBER
+           ====================================================== */
+
+        const inviteButton =
+
+          event.target.closest(
+            '.btn-invite-member'
           );
 
 
-        if (!confirmDelete) {
-          return;
+        if (
+          inviteButton
+        ) {
+
+
+          activeInviteBoardId =
+
+            inviteButton
+              .dataset
+              .inviteId;
+
+
+          openInvitePrompt();
+
         }
 
 
-        globalProjects =
-          globalProjects.filter(
-            (item) => item.id !== idToDelete
-          );
-
-
-        saveGlobalProjects();
-
-
-        renderProjects();
-
-      });
-
-    });
-
-
-  // ================= INVITE MEMBER =================
-
-  document
-    .querySelectorAll('.btn-invite-member')
-    .forEach((button) => {
-
-      button.addEventListener('click', (event) => {
-
-        activeInviteBoardId =
-          event.currentTarget.dataset.inviteId.trim();
-
-
-        openInvitePrompt();
-
-      });
-
-    });
-
-
+      }
+    );
 
   }
+
 
 
   /* ==========================================================
@@ -1121,89 +1685,144 @@ card.innerHTML = `
 
   function openInvitePrompt() {
 
+
     const emailInput =
+
       prompt(
+
         'Enter the registered email address of the user you want to invite:'
+
       );
 
 
-    if (!emailInput) {
+
+    if (
+      !emailInput
+    ) {
 
       return;
+
     }
 
 
+
     const email =
+
       emailInput
+
         .trim()
+
         .toLowerCase();
+
 
 
     const users =
       getAllUsers();
 
 
+
     const targetUser =
+
       users.find(
-        (user) =>
-          (
-            user.email || ''
-          )
-            .toLowerCase() ===
-          email
+        (user) => {
+
+          return (
+
+            (
+              user.email ||
+              ''
+            )
+
+              .toLowerCase() ===
+            email
+
+          );
+
+        }
       );
 
 
-    if (!targetUser) {
+
+    if (
+      !targetUser
+    ) {
 
       alert(
+
         '❌ User not found. They must create a FlowLock account first.'
+
       );
 
 
       return;
+
     }
+
 
 
     const project =
+
       globalProjects.find(
-        (item) =>
-          item.id ===
-          activeInviteBoardId
+        (item) => {
+
+          return (
+
+            item.id ===
+            activeInviteBoardId
+
+          );
+
+        }
       );
 
 
-    if (!project) {
+
+    if (
+      !project
+    ) {
 
       return;
+
     }
 
 
+
     if (
+
       !Array.isArray(
         project.members
       )
+
     ) {
 
       project.members =
-        [project.ownerId];
+        [
+          project.ownerId
+        ];
 
     }
 
 
+
     if (
+
       project.members.includes(
         targetUser.id
       )
+
     ) {
 
       alert(
+
         '⚠️ This user is already a member of this project.'
+
       );
 
 
       return;
+
     }
+
 
 
     project.members.push(
@@ -1211,12 +1830,20 @@ card.innerHTML = `
     );
 
 
+
     saveGlobalProjects();
 
 
+
     alert(
-      `✅ ${targetUser.name} has been added to "${project.title}".`
+
+      `✅ ${
+        targetUser.name ||
+        targetUser.email
+      } has been added to "${project.title}".`
+
     );
+
 
 
     renderProjects();
@@ -1224,20 +1851,30 @@ card.innerHTML = `
   }
 
 
+
   /* ==========================================================
      SEARCH
      ========================================================== */
 
-  document
-    .getElementById(
+  const projectSearch =
+    document.getElementById(
       'project-search'
-    )
-    ?.addEventListener(
+    );
+
+
+  if (
+    projectSearch
+  ) {
+
+    projectSearch.addEventListener(
       'input',
       (event) => {
 
+
         searchQuery =
-          event.target.value.trim();
+          event.target
+            .value
+            .trim();
 
 
         renderProjects();
@@ -1245,122 +1882,183 @@ card.innerHTML = `
       }
     );
 
+  }
+
+
 
   /* ==========================================================
-     FILTER BUTTONS
+     FILTERS
      ========================================================== */
 
   document
+
     .querySelectorAll(
       '.filter-btn'
     )
-    .forEach((button) => {
 
-      button.addEventListener(
-        'click',
-        (event) => {
-
-          document
-            .querySelectorAll(
-              '.filter-btn'
-            )
-            .forEach(
-              (filterButton) => {
-
-                filterButton
-                  .classList
-                  .remove(
-                    'active'
-                  );
-
-              }
-            );
+    .forEach(
+      (button) => {
 
 
-          event.currentTarget
-            .classList
-            .add(
-              'active'
-            );
+        button.addEventListener(
+          'click',
+          (event) => {
 
 
-          currentFilter =
-            event.currentTarget
-              .dataset
-              .filter;
+            document
+
+              .querySelectorAll(
+                '.filter-btn'
+              )
+
+              .forEach(
+                (filterButton) => {
 
 
-          renderProjects();
+                  filterButton
 
-        }
-      );
+                    .classList
 
-    });
+                    .remove(
+                      'active'
+                    );
+
+
+                }
+              );
+
+
+
+            event
+              .currentTarget
+              .classList
+              .add(
+                'active'
+              );
+
+
+
+            currentFilter =
+
+              event
+                .currentTarget
+                .dataset
+                .filter;
+
+
+
+            renderProjects();
+
+          }
+        );
+
+      }
+    );
+
 
 
   /* ==========================================================
-     OPEN MODAL BUTTONS
+     MODAL BUTTONS
      ========================================================== */
 
-  document
-    .getElementById(
+  const newProjectButton =
+    document.getElementById(
       'btn-new-project-hub'
-    )
-    ?.addEventListener(
+    );
+
+
+  const closeProjectButton =
+    document.getElementById(
+      'close-project-modal'
+    );
+
+
+  const cancelProjectButton =
+    document.getElementById(
+      'btn-cancel-hub-project'
+    );
+
+
+
+  if (
+    newProjectButton
+  ) {
+
+    newProjectButton.addEventListener(
       'click',
       openCreateModal
     );
 
+  }
 
-  document
-    .getElementById(
-      'close-project-modal'
-    )
-    ?.addEventListener(
+
+
+  if (
+    closeProjectButton
+  ) {
+
+    closeProjectButton.addEventListener(
       'click',
       closeCreateModal
     );
 
+  }
 
-  document
-    .getElementById(
-      'btn-cancel-hub-project'
-    )
-    ?.addEventListener(
+
+
+  if (
+    cancelProjectButton
+  ) {
+
+    cancelProjectButton.addEventListener(
       'click',
       closeCreateModal
     );
+
+  }
+
 
 
   /* ==========================================================
-     CLOSE MODAL WHEN CLICKING BACKDROP
+     CLICK OUTSIDE MODAL
      ========================================================== */
 
-  newProjectModal
-    ?.addEventListener(
+  if (
+    newProjectModal
+  ) {
+
+    newProjectModal.addEventListener(
       'click',
       (event) => {
 
+
         if (
+
           event.target ===
           newProjectModal
+
         ) {
 
           closeCreateModal();
 
         }
 
+
       }
     );
 
+  }
+
+
 
   /* ==========================================================
-     ESC KEY
+     ESCAPE KEY
      ========================================================== */
 
   document.addEventListener(
     'keydown',
     (event) => {
+
 
       if (
         event.key ===
@@ -1371,23 +2069,34 @@ card.innerHTML = `
 
       }
 
+
     }
   );
 
 
+
   /* ==========================================================
-     CREATE PROJECT FORM
+     CREATE PROJECT
      ========================================================== */
 
-  document
-    .getElementById(
+  const createProjectForm =
+    document.getElementById(
       'form-hub-create-project'
-    )
-    ?.addEventListener(
+    );
+
+
+
+  if (
+    createProjectForm
+  ) {
+
+    createProjectForm.addEventListener(
       'submit',
       (event) => {
 
+
         event.preventDefault();
+
 
 
         const titleInput =
@@ -1402,17 +2111,28 @@ card.innerHTML = `
           );
 
 
+
         const title =
-          titleInput.value.trim();
+          titleInput
+            .value
+            .trim();
+
 
 
         const description =
-          descriptionInput.value.trim();
+          descriptionInput
+            .value
+            .trim();
 
 
-        /* simple form validation */
 
-        if (!title) {
+        /* ======================================================
+           VALIDATION
+           ====================================================== */
+
+        if (
+          !title
+        ) {
 
           alert(
             'Please enter a project name.'
@@ -1423,77 +2143,141 @@ card.innerHTML = `
 
 
           return;
+
         }
 
 
-        /* Create plain JS object */
+
+        /* ======================================================
+           CREATE PROJECT OBJECT
+           ====================================================== */
 
         const newProject = {
+
 
           id:
             `board-${Date.now()}`,
 
+
           title:
             title,
+
 
           desc:
             description,
 
+
           ownerId:
             currentUser.id,
+
 
           members: [
             currentUser.id
           ],
 
+
           tasks: [],
 
+
           createdAt:
-            new Date().toISOString()
+            new Date()
+              .toISOString()
+
 
         };
 
 
-        /* Array method */
+
+        /* ======================================================
+           ADD PROJECT
+           ====================================================== */
 
         globalProjects.push(
           newProject
         );
 
 
-        /* Local Storage + JSON */
+
+        /* ======================================================
+           SAVE PROJECT
+           ====================================================== */
 
         saveGlobalProjects();
 
 
-        event.currentTarget.reset();
+
+        /* ======================================================
+           REMEMBER THIS WORKSPACE
+
+           This is important for index.html.
+
+           When the user comes back to landing page
+           it will show:
+
+           Continue Workspace →
+           ====================================================== */
+
+        localStorage.setItem(
+
+          LAST_PROJECT_KEY,
+
+          newProject.id
+
+        );
+
+
+
+        /* ======================================================
+           RESET FORM
+           ====================================================== */
+
+        event
+          .currentTarget
+          .reset();
+
 
 
         closeCreateModal();
 
 
-        /*
-         * Open the new EMPTY project.
-         */
+
+        /* ======================================================
+           OPEN NEW EMPTY PROJECT
+           ====================================================== */
 
         window.location.href =
-          `app.html?board=${newProject.id}`;
+
+          `app.html?board=${encodeURIComponent(
+            newProject.id
+          )}`;
+
 
       }
     );
+
+  }
+
 
 
   /* ==========================================================
      LOGOUT
      ========================================================== */
 
-  document
-    .getElementById(
+  const logoutButton =
+    document.getElementById(
       'btn-projects-logout'
-    )
-    ?.addEventListener(
+    );
+
+
+
+  if (
+    logoutButton
+  ) {
+
+    logoutButton.addEventListener(
       'click',
       () => {
+
 
         localStorage.removeItem(
           'flowlock_authenticated'
@@ -1505,11 +2289,25 @@ card.innerHTML = `
         );
 
 
+        /*
+         * IMPORTANT:
+         *
+         * Do NOT remove LAST_PROJECT_KEY.
+         *
+         * The user should be able to login later
+         * and continue their previous workspace.
+         */
+
+
         window.location.href =
           'index.html';
 
+
       }
     );
+
+  }
+
 
 
   /* ==========================================================
