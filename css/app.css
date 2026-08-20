@@ -497,9 +497,7 @@ body.app-body {
    ========================================================================== */
 
 .kanban-column {
-  /* min-height: 590px; */
- max-height: 490px;
- overflow-y: scroll;
+  min-height: 590px;
   padding: 15px;
 
   background:
@@ -595,12 +593,16 @@ body.app-body {
    ========================================================================== */
 
 .column-body {
-  min-height: 500px;
+  /* min-height: 500px; */
+ max-height: 490px;
+min-height: 421px;
+ overflow-y: scroll;
 
   padding-top: 15px;
 
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 
   gap: 14px;
 }
