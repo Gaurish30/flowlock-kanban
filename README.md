@@ -1,4 +1,8 @@
-![Uploading image.png…]()
+## 🖼️ Preview
+
+<p align="center">
+  <img src="assets/flowlock-landing.png" alt="FlowLock Landing Page" width="900">
+</p>
 
 # ⚡ FlowLock — Dependency-Aware Graph Kanban
 
