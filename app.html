@@ -13,6 +13,689 @@
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/landing.css" />
   <link rel="stylesheet" href="css/app.css" />
+<style>
+  /* ==========================================================
+   FLOWLOCK TEAM LEADERBOARD MODAL
+   Graph Paper + Walnut + Sticky Note Theme
+   ========================================================== */
+
+
+/* ==========================================================
+   MODAL OVERLAY
+   ========================================================== */
+
+#modal-leaderboard.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background:
+    rgba(44, 34, 30, 0.68);
+
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  animation:
+    leaderboardOverlayIn
+    0.22s ease;
+}
+
+
+#modal-leaderboard.hidden {
+  display: none;
+}
+
+
+@keyframes leaderboardOverlayIn {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+
+}
+
+
+/* ==========================================================
+   MAIN MODAL CARD
+   ========================================================== */
+
+.leaderboard-modal-card {
+  position: relative;
+
+  width: min(94vw, 650px);
+  max-height: 85vh;
+
+  overflow-y: auto;
+
+  padding: 28px;
+
+  color:
+    var(--paper-text, #2c221e);
+
+  background-color:
+    var(--board-bg, #fcfaf4);
+
+  background-image:
+    linear-gradient(
+      rgba(210, 200, 166, 0.35) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(210, 200, 166, 0.35) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    20px 20px;
+
+  border:
+    2px solid
+    #8d6e63;
+
+  border-radius:
+    12px 12px 32px 18px;
+
+  box-shadow:
+    0 25px 65px
+    rgba(0, 0, 0, 0.38);
+
+  animation:
+    leaderboardCardIn
+    0.28s
+    cubic-bezier(
+      0.34,
+      1.56,
+      0.64,
+      1
+    );
+}
+
+
+@keyframes leaderboardCardIn {
+
+  from {
+    opacity: 0;
+    transform:
+      translateY(20px)
+      scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+
+/* ==========================================================
+   TOP PIN
+   ========================================================== */
+
+.leaderboard-modal-card::before {
+  content: '';
+
+  position: absolute;
+
+  top: -9px;
+  left: 50%;
+
+  width: 18px;
+  height: 18px;
+
+  transform:
+    translateX(-50%);
+
+  background:
+    radial-gradient(
+      circle at 35% 35%,
+      #ef5350,
+      #8b1018
+    );
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 4px 7px
+    rgba(0, 0, 0, 0.35);
+}
+
+
+/* little tape decoration */
+
+.leaderboard-modal-card::after {
+  content: '';
+
+  position: absolute;
+
+  top: -7px;
+  right: 90px;
+
+  width: 60px;
+  height: 18px;
+
+  background:
+    rgba(216, 67, 21, 0.18);
+
+  transform:
+    rotate(4deg);
+
+  border-radius: 2px;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+#modal-leaderboard .modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding-bottom: 18px;
+
+  border-bottom:
+    2px dashed
+    #c9bca5;
+}
+
+
+#modal-leaderboard .modal-eyebrow {
+  display: inline-block;
+
+  margin-bottom: 4px;
+
+  color:
+    #d84315;
+
+  font-size:
+    0.64rem;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    0.1em;
+}
+
+
+#modal-leaderboard .modal-header h3 {
+  margin: 0;
+
+  color:
+    #2c221e;
+
+  font-family:
+    var(
+      --font-hand,
+      'Gloria Hallelujah',
+      cursive
+    );
+
+  font-size:
+    1.45rem;
+
+  line-height:
+    1.3;
+}
+
+
+/* ==========================================================
+   CLOSE X BUTTON
+   ========================================================== */
+
+#modal-leaderboard .btn-close {
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  color:
+    #f5ebe0;
+
+  background:
+    var(
+      --header-bg,
+      #2d221c
+    );
+
+  border:
+    1px solid
+    #59473c;
+
+  border-radius:
+    50%;
+
+  font-size:
+    1.5rem;
+
+  line-height:
+    1;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+
+#modal-leaderboard .btn-close:hover {
+  background:
+    #d84315;
+
+  transform:
+    rotate(8deg)
+    scale(1.07);
+}
+
+
+/* ==========================================================
+   BODY
+   ========================================================== */
+
+#modal-leaderboard .modal-body {
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+
+  margin-top: 22px;
+}
+
+
+/* ==========================================================
+   SECTION TITLES
+   ========================================================== */
+
+.leaderboard-section {
+  position: relative;
+}
+
+
+.leaderboard-section h4 {
+  display: inline-block;
+
+  margin: 0 0 13px;
+
+  padding:
+    6px 13px;
+
+  color:
+    #4e342e;
+
+  background:
+    var(
+      --paper-yellow,
+      #fff9c4
+    );
+
+  border:
+    1px solid
+    #dfd28d;
+
+  border-radius:
+    5px 10px 5px 9px;
+
+  font-family:
+    var(
+      --font-hand,
+      'Gloria Hallelujah',
+      cursive
+    );
+
+  font-size:
+    0.95rem;
+
+  transform:
+    rotate(-1deg);
+
+  box-shadow:
+    0 4px 10px
+    rgba(0, 0, 0, 0.06);
+}
+
+
+/* ==========================================================
+   RANKINGS CONTAINER
+   ========================================================== */
+
+#leaderboard-rankings-container {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+
+/*
+   This also styles dynamically generated ranking rows
+   if your JS creates simple div elements.
+*/
+
+#leaderboard-rankings-container
+> div {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  padding:
+    13px 16px;
+
+  color:
+    #3e2723;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.9
+    );
+
+  border:
+    1px dashed
+    #c9bca5;
+
+  border-radius:
+    13px 5px 13px 6px;
+
+  box-shadow:
+    0 4px 10px
+    rgba(0, 0, 0, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+#leaderboard-rankings-container
+> div:hover {
+  transform:
+    translateX(4px);
+
+  box-shadow:
+    0 7px 15px
+    rgba(0, 0, 0, 0.08);
+}
+
+
+/* first position */
+
+#leaderboard-rankings-container
+> div:nth-child(1) {
+  background:
+    #fff8c6;
+
+  border-color:
+    #d6b755;
+}
+
+
+/* second */
+
+#leaderboard-rankings-container
+> div:nth-child(2) {
+  background:
+    #f3f3f3;
+
+  border-color:
+    #bdbdbd;
+}
+
+
+/* third */
+
+#leaderboard-rankings-container
+> div:nth-child(3) {
+  background:
+    #ffe0b2;
+
+  border-color:
+    #bc8a5f;
+}
+
+
+/* ==========================================================
+   ACTIVITY LOG
+   ========================================================== */
+
+#activity-log-container {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  max-height: 220px;
+
+  overflow-y: auto;
+
+  padding-right: 5px;
+}
+
+
+#activity-log-container
+> div {
+  position: relative;
+
+  padding:
+    11px 14px 11px 30px;
+
+  color:
+    #5d4037;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.72
+    );
+
+  border-left:
+    3px solid
+    #d84315;
+
+  border-radius:
+    4px 12px 12px 4px;
+
+  font-size:
+    0.82rem;
+
+  line-height:
+    1.45;
+}
+
+
+/* pin/dot on activity */
+
+#activity-log-container
+
+
+
+/* ==========================================================
+   SCROLLBAR
+   ========================================================== */
+
+#activity-log-container::-webkit-scrollbar,
+.leaderboard-modal-card::-webkit-scrollbar {
+  width: 7px;
+}
+
+
+#activity-log-container::-webkit-scrollbar-track,
+.leaderboard-modal-card::-webkit-scrollbar-track {
+  background:
+    transparent;
+}
+
+
+#activity-log-container::-webkit-scrollbar-thumb,
+.leaderboard-modal-card::-webkit-scrollbar-thumb {
+  background:
+    #b8a999;
+
+  border-radius:
+    20px;
+}
+
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+
+#modal-leaderboard .modal-footer {
+  display: flex;
+
+  justify-content: flex-end;
+
+  margin-top: 22px;
+
+  padding-top: 16px;
+
+  border-top:
+    2px dashed
+    #c9bca5;
+}
+
+
+/* ==========================================================
+   CLOSE BUTTON
+   ========================================================== */
+
+#modal-leaderboard
+.modal-footer
+.btn-secondary {
+  padding:
+    9px 22px;
+
+  color:
+    #f5ebe0;
+
+  background:
+    var(
+      --header-bg,
+      #2d221c
+    );
+
+  border:
+    1px solid
+    #59473c;
+
+  border-radius:
+    25px;
+
+  font-weight:
+    700;
+
+  cursor:
+    pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+#modal-leaderboard
+.modal-footer
+.btn-secondary:hover {
+  background:
+    #3e2c24;
+
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 5px 12px
+    rgba(0, 0, 0, 0.18);
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (
+  max-width:
+  650px
+) {
+
+  #modal-leaderboard.modal-overlay {
+    padding:
+      14px;
+  }
+
+
+  .leaderboard-modal-card {
+    width:
+      100%;
+
+    max-height:
+      90vh;
+
+    padding:
+      22px 17px;
+
+    border-radius:
+      10px 10px 25px 14px;
+  }
+
+
+  #modal-leaderboard
+  .modal-header h3 {
+    font-size:
+      1.15rem;
+  }
+
+
+  #leaderboard-rankings-container
+  > div {
+    gap:
+      7px;
+
+    padding:
+      11px 12px;
+
+    font-size:
+      0.78rem;
+  }
+
+
+  .prereq-pill {
+    flex-direction:
+      column;
+  }
+
+}
+</style>
 </head>
 <body class="app-body">
 
@@ -53,16 +736,20 @@
       </div>
 
       <div class="view-toggles">
-        <button id="toggle-kanban" class="toggle-btn active">📋 Kanban View</button>
-        <button id="toggle-graph" class="toggle-btn">🕸 Dependency Graph View</button>
-        <button id="btn-view-roles" class="btn btn-secondary btn-pill">👥 Team Roles</button>
-        <button id="btn-add-task" class="btn btn-primary btn-pill">+ Create Task</button>
+  <button id="toggle-kanban" class="toggle-btn active">📋 Kanban View</button>
+  <button id="toggle-graph" class="toggle-btn">🕸 Dependency Graph View</button>
+  <button id="btn-view-roles" class="btn btn-secondary btn-pill">👥 Team Roles</button>
+  <button id="btn-add-task" class="btn btn-primary btn-pill">+ Create Task</button>
+  
   <button id="btn-add-milestone" class="btn btn-secondary">
     <span>🏁</span> Set Final Milestone
+  </button> <!-- Added missing closing tag here -->
+  
+  <button id="btn-view-leaderboard" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+    Contributions
   </button>
-      </div>
+</div>
     </div>
-
 
     <!-- Alert / Banner Container for Dependency Blocks -->
     <div id="dependency-alert" class="alert-banner hidden">
@@ -121,7 +808,6 @@
     </div>
 
     <!-- VIEW 2: VISUAL DEPENDENCY GRAPH -->
-    <!-- Updated Graph View with Sidebar in app.html -->
     <div id="graph-view" class="view-panel">
       <div class="graph-view-wrapper">
         
@@ -165,7 +851,16 @@
           <textarea id="task-desc" class="form-input" rows="3" placeholder="Brief details about this work unit..."></textarea>
         </div>
 
-       <!-- Replacement for Blocker Tasks Selection in app.html -->
+        <!-- Assignee Selection -->
+        <div class="form-group">
+          <label for="task-assignee-select">Assignee</label>
+          <select id="task-assignee-select" class="form-input board-dropdown" style="width: 100%;">
+            <option value="">-- Unassigned --</option>
+            <!-- Dynamically populated via js/app.js -->
+          </select>
+        </div>
+
+        <!-- Blocker Tasks Selection -->
         <div class="form-group">
           <label>Blocker Tasks (Dependencies)</label>
           <p class="field-hint">Select all prerequisite tasks that must be completed before this task can start.</p>
@@ -207,9 +902,8 @@
       </form>
     </div>
   </div>
-<!-- Workspace Subheader Actions -->
-    
-    <!-- MODAL 3: TEAM ROLES -->
+
+  <!-- MODAL 3: TEAM ROLES -->
   <div id="modal-roles" class="modal-backdrop hidden">
     <div class="modal-card card-rounded">
       <div class="modal-header">
@@ -227,9 +921,57 @@
     </div>
   </div>
 
-
   <script src="js/app.js"></script>
   <script src="js/graphdependency.js"></script>
-   
+    
+
+<div id="modal-leaderboard" class="modal-overlay hidden">
+
+  <div class="modal-card leaderboard-modal-card">
+
+    <div class="modal-header">
+      <div>
+        <span class="modal-eyebrow">TEAM WORKSPACE</span>
+        <h3>🏆 Team Contributions & Task History</h3>
+      </div>
+
+      <button
+        id="close-leaderboard-modal"
+        class="btn-close"
+        type="button"
+      >
+        &times;
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="leaderboard-section">
+        <h4>🏅 Rankings</h4>
+        <div id="leaderboard-rankings-container"></div>
+      </div>
+
+      <div class="leaderboard-section">
+        <h4>📌 Recent Activity</h4>
+        <div id="activity-log-container"></div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button
+        id="btn-close-leaderboard"
+        class="btn btn-secondary"
+        type="button"
+      >
+        Close
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 </body>
 </html>
