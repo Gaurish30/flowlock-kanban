@@ -1803,8 +1803,9 @@ textarea.form-input {
   position: absolute;
   z-index: 3000;
 
-  width: min(340px, calc(100vw - 30px));
-  padding: 18px;
+  /* slightly wider so fields don't get cramped */
+  width: min(390px, calc(100vw - 30px));
+  padding: 18px 20px;
 
   color: #342720;
 
@@ -1812,8 +1813,15 @@ textarea.form-input {
 
   /* graph-paper texture */
   background-image:
-    linear-gradient(rgba(190, 176, 145, 0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(190, 176, 145, 0.18) 1px, transparent 1px);
+    linear-gradient(
+      rgba(190, 176, 145, 0.18) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(190, 176, 145, 0.18) 1px,
+      transparent 1px
+    );
 
   background-size: 18px 18px;
 
@@ -1830,7 +1838,10 @@ textarea.form-input {
 }
 
 
-/* hide popover */
+/* =========================================================
+   HIDDEN STATE
+   ========================================================= */
+
 .graph-popover.hidden {
   display: none;
 }
@@ -1849,7 +1860,9 @@ textarea.form-input {
 }
 
 
-/* small pin at top */
+/* =========================================================
+   SMALL PIN
+   ========================================================= */
 
 .graph-popover::before {
   content: '';
@@ -1861,11 +1874,12 @@ textarea.form-input {
   width: 13px;
   height: 13px;
 
-  background: radial-gradient(
-    circle at 35% 30%,
-    #f16b52,
-    #a42618
-  );
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #f16b52,
+      #a42618
+    );
 
   border-radius: 50%;
 
@@ -1909,7 +1923,6 @@ textarea.form-input {
   padding: 4px 8px;
 
   color: #5d4037;
-
   background: #fff3b0;
 
   border: 1px solid #dfca73;
@@ -1920,6 +1933,8 @@ textarea.form-input {
   font-weight: 800;
 
   letter-spacing: 0.04em;
+
+  white-space: nowrap;
 
   transform: rotate(-1deg);
 }
@@ -1938,7 +1953,6 @@ textarea.form-input {
   padding: 4px 9px;
 
   color: #8b451d;
-
   background: #ffe0b2;
 
   border: 1px solid #edb96b;
@@ -1948,12 +1962,13 @@ textarea.form-input {
   font-weight: 800;
 
   letter-spacing: 0.05em;
-
   text-transform: uppercase;
+
+  white-space: nowrap;
 }
 
 
-/* Optional status classes */
+/* TO DO */
 
 .popover-status-pill.status-todo {
   color: #5f564d;
@@ -1962,6 +1977,8 @@ textarea.form-input {
 }
 
 
+/* IN PROGRESS */
+
 .popover-status-pill.status-progress {
   color: #8a4a12;
   background: #ffe7bd;
@@ -1969,12 +1986,16 @@ textarea.form-input {
 }
 
 
+/* DONE */
+
 .popover-status-pill.status-done {
   color: #2d6541;
   background: #d9efd8;
   border-color: #97c89a;
 }
 
+
+/* LOCKED */
 
 .popover-status-pill.status-locked {
   color: #8c2929;
@@ -1988,8 +2009,8 @@ textarea.form-input {
    ========================================================= */
 
 .popover-close {
-  width: 29px;
-  height: 29px;
+  width: 32px;
+  height: 32px;
 
   flex-shrink: 0;
 
@@ -1999,7 +2020,6 @@ textarea.form-input {
   padding: 0;
 
   color: #f7eee5;
-
   background: #34261f;
 
   border: 1px solid #584438;
@@ -2039,8 +2059,10 @@ textarea.form-input {
     cursive;
 
   font-size: 1.08rem;
-
   line-height: 1.45;
+
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 
@@ -2067,10 +2089,17 @@ textarea.form-input {
 .popover-grid {
   display: grid;
 
+  /*
+     Assignee now always gets enough space
+     to display "Unassigned" properly.
+  */
   grid-template-columns:
-    0.9fr 1.4fr;
+    minmax(145px, 1fr)
+    minmax(145px, 1fr);
 
-  gap: 12px;
+  gap: 16px;
+
+  align-items: start;
 }
 
 
@@ -2079,10 +2108,14 @@ textarea.form-input {
 }
 
 
+/* =========================================================
+   LABEL
+   ========================================================= */
+
 .popover-label {
   display: block;
 
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 
   color: #8a7667;
 
@@ -2090,10 +2123,13 @@ textarea.form-input {
   font-weight: 800;
 
   letter-spacing: 0.07em;
-
   text-transform: uppercase;
 }
 
+
+/* =========================================================
+   NORMAL FIELD VALUE
+   ========================================================= */
 
 .popover-val {
   display: block;
@@ -2103,7 +2139,14 @@ textarea.form-input {
   font-size: 0.82rem;
   font-weight: 700;
 
-  word-break: break-word;
+  /*
+     IMPORTANT FIX:
+     prevents Unassigned from becoming:
+     Unassigne
+     d
+  */
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 
@@ -2112,24 +2155,64 @@ textarea.form-input {
    ========================================================= */
 
 #popover-task-assignee {
-  display: inline-flex;
+  width: 100%;
+  min-height: 42px;
+
+  box-sizing: border-box;
+
+  display: flex;
   align-items: center;
 
-  gap: 5px;
+  gap: 8px;
 
-  padding: 5px 8px;
+  padding: 7px 10px;
 
-  background: rgba(255, 255, 255, 0.72);
+  color: #3c2b24;
 
-  border: 1px dashed #c5b39d;
+  background:
+    rgba(255, 255, 255, 0.76);
+
+  border:
+    1px dashed
+    #c5b39d;
+
   border-radius: 7px;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  /*
+     MAIN FIX
+  */
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+
+/* Assignee icon */
 
 #popover-task-assignee::before {
   content: '👤';
 
-  font-size: 0.76rem;
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 25px;
+  height: 25px;
+
+  background: #f1e6f4;
+
+  border: 1px solid #ddcae3;
+  border-radius: 50%;
+
+  font-size: 0.72rem;
 }
 
 
@@ -2138,7 +2221,10 @@ textarea.form-input {
    ========================================================= */
 
 .popover-deps-list {
+  min-height: 42px;
+
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
 
   gap: 5px;
@@ -2150,7 +2236,8 @@ textarea.form-input {
 
 
 /*
-   If JS generates spans inside dependency list:
+   If JS generates:
+
    <span>FL-101</span>
 */
 
@@ -2158,10 +2245,11 @@ textarea.form-input {
   display: inline-flex;
   align-items: center;
 
-  padding: 4px 7px;
+  gap: 3px;
+
+  padding: 5px 8px;
 
   color: #6d421e;
-
   background: #fff3c4;
 
   border: 1px solid #dfc27b;
@@ -2170,6 +2258,8 @@ textarea.form-input {
   font-family: monospace;
   font-size: 0.67rem;
   font-weight: 700;
+
+  white-space: nowrap;
 
   transition:
     transform 0.15s ease,
@@ -2187,21 +2277,43 @@ textarea.form-input {
 
 
 /* =========================================================
+   NO DEPENDENCIES TEXT
+   ========================================================= */
+
+.popover-deps-list.no-dependencies {
+  color: #9b897c;
+
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+
+/* =========================================================
    STATUS DETAILS
    ========================================================= */
 
 .margin-top-sm {
-  margin-top: 15px;
+  margin-top: 16px;
 }
 
 
 .popover-lock-info {
   position: relative;
 
-  padding: 10px 12px 10px 32px;
+  min-height: 45px;
+
+  display: flex;
+  align-items: center;
+
+  box-sizing: border-box;
+
+  padding:
+    10px
+    12px
+    10px
+    38px;
 
   color: #4b3b32;
-
   background: #eef5df;
 
   border:
@@ -2213,20 +2325,24 @@ textarea.form-input {
     #668653;
 
   border-radius:
-    5px 10px 10px 5px;
+    5px
+    10px
+    10px
+    5px;
 
   font-size: 0.76rem;
-
   line-height: 1.5;
 }
 
+
+/* unlocked check */
 
 .popover-lock-info::before {
   content: '✓';
 
   position: absolute;
 
-  left: 11px;
+  left: 13px;
   top: 50%;
 
   transform:
@@ -2234,11 +2350,14 @@ textarea.form-input {
 
   color: #557842;
 
+  font-size: 1rem;
   font-weight: 900;
 }
 
 
-/* use this class from JS when task is blocked */
+/* =========================================================
+   LOCKED STATUS
+   ========================================================= */
 
 .popover-lock-info.is-locked {
   color: #742f29;
@@ -2253,11 +2372,37 @@ textarea.form-input {
 .popover-lock-info.is-locked::before {
   content: '🔒';
 
-  left: 8px;
+  left: 10px;
 
   color: inherit;
 
   font-size: 0.76rem;
+}
+
+
+/* =========================================================
+   OPTIONAL BLOCKER TAG
+   ========================================================= */
+
+.popover-blocker {
+  display: inline-flex;
+  align-items: center;
+
+  margin: 0 3px;
+
+  padding: 2px 6px;
+
+  color: #8b2d23;
+  background: #ffdcd5;
+
+  border: 1px solid #e5a096;
+  border-radius: 6px;
+
+  font-family: monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+
+  white-space: nowrap;
 }
 
 
@@ -2277,12 +2422,27 @@ textarea.form-input {
   .popover-grid {
     grid-template-columns: 1fr;
 
-    gap: 13px;
+    gap: 14px;
   }
 
 
   .popover-title {
     font-size: 0.98rem;
+  }
+
+
+  /* On mobile assignee only uses required width */
+
+  #popover-task-assignee {
+    width: fit-content;
+
+    min-width: 150px;
+    max-width: 100%;
+  }
+
+
+  .popover-deps-list {
+    min-height: auto;
   }
 
 }
