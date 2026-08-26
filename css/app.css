@@ -1644,3 +1644,645 @@ textarea.form-input {
     display: none;
   }
 }
+
+/* --- Graph Node Click Hover & Interactive States --- */
+.graph-node {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.graph-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  border-color: #6366f1 !important;
+}
+
+/* --- Node Details Drawer Overlay --- */
+.graph-drawer-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-end;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.graph-drawer-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* --- Drawer Card Styling --- */
+.graph-drawer-card {
+  width: 100%;
+  max-width: 380px;
+  height: 100%;
+  background-color: #1e293b;
+  color: #f8fafc;
+  box-shadow: -10px 0 25px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.graph-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.graph-drawer-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #334155;
+  color: #94a3b8;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.graph-drawer-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.graph-drawer-close:hover {
+  color: #ffffff;
+}
+
+.drawer-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+}
+
+.drawer-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #334155;
+  margin-bottom: 16px;
+}
+
+.drawer-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.drawer-status-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background-color: #334155;
+  color: #cbd5e1;
+}
+
+.drawer-status-pill.done { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.drawer-status-pill.locked { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+.drawer-info-group {
+  margin-bottom: 16px;
+}
+
+.drawer-val {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+
+.drawer-deps-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.drawer-dep-badge {
+  font-size: 0.75rem;
+  background-color: #334155;
+  color: #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.drawer-lock-info {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  background-color: #0f172a;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+}
+
+/* =========================================================
+   FLOWLOCK — GRAPH NODE POPOVER
+   ========================================================= */
+
+.graph-popover {
+  position: absolute;
+  z-index: 3000;
+
+  width: min(340px, calc(100vw - 30px));
+  padding: 18px;
+
+  color: #342720;
+
+  background-color: #fffdf6;
+
+  /* graph-paper texture */
+  background-image:
+    linear-gradient(rgba(190, 176, 145, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(190, 176, 145, 0.18) 1px, transparent 1px);
+
+  background-size: 18px 18px;
+
+  border: 1.5px solid #b7a48c;
+  border-radius: 8px 8px 18px 10px;
+
+  box-shadow:
+    0 18px 40px rgba(46, 33, 26, 0.2),
+    4px 5px 0 rgba(106, 80, 63, 0.08);
+
+  transform-origin: top left;
+
+  animation: graphPopoverOpen 0.22s ease;
+}
+
+
+/* hide popover */
+.graph-popover.hidden {
+  display: none;
+}
+
+
+@keyframes graphPopoverOpen {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* small pin at top */
+
+.graph-popover::before {
+  content: '';
+
+  position: absolute;
+  top: -7px;
+  left: 25px;
+
+  width: 13px;
+  height: 13px;
+
+  background: radial-gradient(
+    circle at 35% 30%,
+    #f16b52,
+    #a42618
+  );
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 3px 5px rgba(0, 0, 0, 0.26);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.popover-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 12px;
+}
+
+
+.popover-tag-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 7px;
+}
+
+
+/* =========================================================
+   TASK ID
+   ========================================================= */
+
+.popover-task-id {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px 8px;
+
+  color: #5d4037;
+
+  background: #fff3b0;
+
+  border: 1px solid #dfca73;
+  border-radius: 4px 7px 4px 6px;
+
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+
+  letter-spacing: 0.04em;
+
+  transform: rotate(-1deg);
+}
+
+
+/* =========================================================
+   STATUS PILL
+   ========================================================= */
+
+.popover-status-pill {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 23px;
+
+  padding: 4px 9px;
+
+  color: #8b451d;
+
+  background: #ffe0b2;
+
+  border: 1px solid #edb96b;
+  border-radius: 20px;
+
+  font-size: 0.64rem;
+  font-weight: 800;
+
+  letter-spacing: 0.05em;
+
+  text-transform: uppercase;
+}
+
+
+/* Optional status classes */
+
+.popover-status-pill.status-todo {
+  color: #5f564d;
+  background: #eee8dc;
+  border-color: #d0c6b8;
+}
+
+
+.popover-status-pill.status-progress {
+  color: #8a4a12;
+  background: #ffe7bd;
+  border-color: #ecb668;
+}
+
+
+.popover-status-pill.status-done {
+  color: #2d6541;
+  background: #d9efd8;
+  border-color: #97c89a;
+}
+
+
+.popover-status-pill.status-locked {
+  color: #8c2929;
+  background: #f9d3cf;
+  border-color: #df8b82;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.popover-close {
+  width: 29px;
+  height: 29px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  color: #f7eee5;
+
+  background: #34261f;
+
+  border: 1px solid #584438;
+  border-radius: 50%;
+
+  font-size: 1.25rem;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+
+.popover-close:hover {
+  background: #d64d22;
+
+  transform:
+    rotate(8deg)
+    scale(1.06);
+}
+
+
+/* =========================================================
+   TASK TITLE
+   ========================================================= */
+
+.popover-title {
+  margin: 4px 0 12px;
+
+  color: #2e211c;
+
+  font-family:
+    "Gloria Hallelujah",
+    cursive;
+
+  font-size: 1.08rem;
+
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
+.popover-divider {
+  width: 100%;
+  height: 1px;
+
+  margin-bottom: 14px;
+
+  border-top:
+    2px dashed
+    rgba(125, 101, 82, 0.28);
+}
+
+
+/* =========================================================
+   DETAILS GRID
+   ========================================================= */
+
+.popover-grid {
+  display: grid;
+
+  grid-template-columns:
+    0.9fr 1.4fr;
+
+  gap: 12px;
+}
+
+
+.popover-field {
+  min-width: 0;
+}
+
+
+.popover-label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #8a7667;
+
+  font-size: 0.63rem;
+  font-weight: 800;
+
+  letter-spacing: 0.07em;
+
+  text-transform: uppercase;
+}
+
+
+.popover-val {
+  display: block;
+
+  color: #3c2b24;
+
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  word-break: break-word;
+}
+
+
+/* =========================================================
+   ASSIGNEE
+   ========================================================= */
+
+#popover-task-assignee {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  padding: 5px 8px;
+
+  background: rgba(255, 255, 255, 0.72);
+
+  border: 1px dashed #c5b39d;
+  border-radius: 7px;
+}
+
+
+#popover-task-assignee::before {
+  content: '👤';
+
+  font-size: 0.76rem;
+}
+
+
+/* =========================================================
+   DEPENDENCIES
+   ========================================================= */
+
+.popover-deps-list {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 5px;
+
+  color: #60493c;
+
+  font-size: 0.76rem;
+}
+
+
+/*
+   If JS generates spans inside dependency list:
+   <span>FL-101</span>
+*/
+
+.popover-deps-list span {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px 7px;
+
+  color: #6d421e;
+
+  background: #fff3c4;
+
+  border: 1px solid #dfc27b;
+  border-radius: 4px 8px 4px 7px;
+
+  font-family: monospace;
+  font-size: 0.67rem;
+  font-weight: 700;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+.popover-deps-list span:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 3px 7px
+    rgba(60, 40, 25, 0.1);
+}
+
+
+/* =========================================================
+   STATUS DETAILS
+   ========================================================= */
+
+.margin-top-sm {
+  margin-top: 15px;
+}
+
+
+.popover-lock-info {
+  position: relative;
+
+  padding: 10px 12px 10px 32px;
+
+  color: #4b3b32;
+
+  background: #eef5df;
+
+  border:
+    1px dashed
+    #aac08f;
+
+  border-left:
+    3px solid
+    #668653;
+
+  border-radius:
+    5px 10px 10px 5px;
+
+  font-size: 0.76rem;
+
+  line-height: 1.5;
+}
+
+
+.popover-lock-info::before {
+  content: '✓';
+
+  position: absolute;
+
+  left: 11px;
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  color: #557842;
+
+  font-weight: 900;
+}
+
+
+/* use this class from JS when task is blocked */
+
+.popover-lock-info.is-locked {
+  color: #742f29;
+
+  background: #fff0ed;
+
+  border-color: #db9b91;
+  border-left-color: #c64736;
+}
+
+
+.popover-lock-info.is-locked::before {
+  content: '🔒';
+
+  left: 8px;
+
+  color: inherit;
+
+  font-size: 0.76rem;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+  .graph-popover {
+    width: calc(100vw - 24px);
+
+    padding: 16px;
+  }
+
+
+  .popover-grid {
+    grid-template-columns: 1fr;
+
+    gap: 13px;
+  }
+
+
+  .popover-title {
+    font-size: 0.98rem;
+  }
+
+}

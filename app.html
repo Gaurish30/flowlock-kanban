@@ -973,5 +973,37 @@
   </div>
 
 </div>
+
+<!-- Enhanced Node Popover Details Card -->
+<div id="graph-node-popover" class="graph-popover hidden">
+  <div class="popover-header">
+    <div class="popover-tag-group">
+      <span class="popover-task-id" id="popover-task-id">TASK-01</span>
+      <span id="popover-task-status" class="popover-status-pill">IN PROGRESS</span>
+    </div>
+    <button type="button" id="close-graph-popover" class="popover-close" aria-label="Close">&times;</button>
+  </div>
+  
+  <h4 id="popover-task-title" class="popover-title">Task Title</h4>
+
+  <div class="popover-divider"></div>
+
+  <div class="popover-grid">
+    <div class="popover-field">
+      <span class="popover-label">Assignee</span>
+      <span id="popover-task-assignee" class="popover-val">—</span>
+    </div>
+
+    <div class="popover-field">
+      <span class="popover-label">Dependencies</span>
+      <div id="popover-task-deps" class="popover-deps-list">None</div>
+    </div>
+  </div>
+
+  <div class="popover-field margin-top-sm">
+    <span class="popover-label">Status Details</span>
+    <div id="popover-task-lock-reason" class="popover-lock-info">Task is unlocked and ready.</div>
+  </div>
+</div>
 </body>
 </html>

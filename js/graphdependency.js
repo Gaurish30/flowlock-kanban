@@ -1,6 +1,6 @@
 // ============================================================
 // dependency_graph.js
-// Standalone FlowLock Dependency Graph
+// Standalone FlowLock Dependency Graph with Popover Details
 // ============================================================
 
 (function () {
@@ -45,23 +45,106 @@
     });
   }
 
+  // --- Popover Side-Center Positioning Logic ---
+  function openNodePopover(task, board, nodePos, nodeElement, cardWidth, cardHeight) {
+    const popover = document.getElementById('graph-node-popover');
+    const container = document.getElementById('graph-canvas-container');
+    if (!popover || !container) return;
+
+    document.querySelectorAll('.graph-node.active-node').forEach(el => el.classList.remove('active-node'));
+    if (nodeElement) nodeElement.classList.add('active-node');
+
+    const isLocked = graphIsTaskLocked(task, board);
+    const allUsers = JSON.parse(localStorage.getItem('flowlock_all_users') || '[]');
+    const assignee = allUsers.find(u => u.id === task.assigneeId);
+
+    document.getElementById('popover-task-id').textContent = task.id || 'N/A';
+    document.getElementById('popover-task-title').textContent = task.title || 'Untitled Task';
+    
+    const statusEl = document.getElementById('popover-task-status');
+    if (isLocked) {
+      statusEl.textContent = '🔒 BLOCKED';
+      statusEl.className = 'popover-status-pill locked';
+    } else {
+      statusEl.textContent = (task.status || 'TODO').toUpperCase();
+      statusEl.className = `popover-status-pill ${task.status === 'done' ? 'done' : ''}`;
+    }
+
+    document.getElementById('popover-task-assignee').textContent = assignee 
+      ? (assignee.name || assignee.email) 
+      : 'Unassigned';
+
+    const depsContainer = document.getElementById('popover-task-deps');
+    const deps = task.dependencies || [];
+    if (deps.length === 0) {
+      depsContainer.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">None</span>';
+    } else {
+      depsContainer.innerHTML = deps.map(depId => {
+        const depTask = (board.tasks || []).find(t => t.id === depId);
+        const isDepDone = depTask && depTask.status === 'done';
+        return `<span class="popover-dep-badge" style="border-left: 3px solid ${isDepDone ? '#22c55e' : '#f59e0b'};">${depId} ${isDepDone ? '✓' : '⏳'}</span>`;
+      }).join('');
+    }
+
+    const lockInfoEl = document.getElementById('popover-task-lock-reason');
+    if (task.isFinalGoal) {
+      lockInfoEl.textContent = isLocked 
+        ? 'Locked until all precursor project tasks reach Done status.' 
+        : '🎉 All dependencies resolved! Final Goal ready.';
+    } else if (isLocked) {
+      const unresolved = deps.filter(dId => {
+        const depTask = (board.tasks || []).find(t => t.id === dId);
+        return !depTask || depTask.status !== 'done';
+      });
+      lockInfoEl.textContent = `Blocked by: ${unresolved.join(', ')}`;
+    } else {
+      lockInfoEl.textContent = 'Task is unlocked and ready.';
+    }
+
+    popover.classList.remove('hidden');
+
+    const popoverWidth = 290;
+    const gap = 16;
+
+    const topCenterY = nodePos.posY + (cardHeight / 2);
+
+    let leftPos = nodePos.posX + cardWidth + gap;
+    popover.classList.remove('popover-left');
+
+    const maxScrollWidth = container.scrollWidth || 2000;
+    if (leftPos + popoverWidth > maxScrollWidth - 20) {
+      leftPos = nodePos.posX - popoverWidth - gap;
+      popover.classList.add('popover-left');
+    }
+
+    popover.style.left = `${leftPos}px`;
+    popover.style.top = `${topCenterY}px`;
+  }
+
+  function closePopover() {
+    const popover = document.getElementById('graph-node-popover');
+    if (popover) popover.classList.add('hidden');
+    document.querySelectorAll('.graph-node.active-node').forEach(el => el.classList.remove('active-node'));
+  }
+
   function renderGraphView() {
     const board = graphGetCurrentBoard();
     const nodesLayer = document.getElementById('graph-nodes-layer');
     const svg = document.getElementById('dependency-svg');
     if (!nodesLayer || !svg) return;
 
+    closePopover();
     nodesLayer.innerHTML = '';
 
     svg.innerHTML = `
       <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
           <path d="M 0 0 L 10 5 L 0 10 z" fill="#6366f1"/>
         </marker>
-        <marker id="arrow-locked" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <marker id="arrow-locked" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
           <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
         </marker>
-        <marker id="arrow-goal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <marker id="arrow-goal" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
           <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b5cf6"/>
         </marker>
       </defs>
@@ -69,7 +152,6 @@
 
     if (!board || !board.tasks || board.tasks.length === 0) return;
 
-    // Map Dependents
     const hasDependents = {};
     board.tasks.forEach(task => {
       (task.dependencies || []).forEach(depId => {
@@ -93,15 +175,15 @@
 
     const cardWidth = 200;
     const cardHeight = 80;
-    const levelSpacingY = 150;
-    const nodeSpacingX = 240;
+    const levelSpacingY = 180;
+    const nodeSpacingX = 270;
 
     const nodePositions = {};
     const outgoingPorts = {};
     const incomingPorts = {};
 
     const hasIsolated = isolatedTasks.length > 0;
-    const dagStartX = hasIsolated ? 320 : 60;
+    const dagStartX = hasIsolated ? 340 : 60;
 
     // Render Standalone Tasks
     if (hasIsolated) {
@@ -126,6 +208,12 @@
             ${task.status.toUpperCase()}
           </span>
         `;
+
+        node.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openNodePopover(task, board, { posX, posY }, node, cardWidth, cardHeight);
+        });
+
         nodesLayer.appendChild(node);
       });
     }
@@ -261,11 +349,17 @@
           node.style.left = `${posX}px`;
           node.style.top = `${posY}px`;
           node.style.width = `${cardWidth}px`;
+
+          node.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openNodePopover(task, board, { posX, posY }, node, cardWidth, cardHeight);
+          });
+
           nodesLayer.appendChild(node);
         });
       });
 
-      // Render Dynamic Connectors
+      // Render Dynamic Connectors (Orthogonal Straight Lines)
       const edges = [];
       dagTasks.forEach(task => {
         const reducedDeps = directDependencies[task.id] || [];
@@ -289,7 +383,6 @@
         const parentDone = parentTask && parentTask.status === 'done';
         const parentLocked = parentTask ? graphIsTaskLocked(parentTask, board) : false;
 
-        // An edge is blocked if its source task is not completed, locked, or target is locked
         const isBlocked = !parentDone || parentLocked || edge.isLocked;
 
         const parentPos = nodePositions[edge.parentId];
@@ -300,26 +393,31 @@
         const inIndex = incomingPorts[edge.childId].indexOf(edge);
         const inTotal = incomingPorts[edge.childId].length;
 
-        const outX = parentPos.posX + (cardWidth / (outTotal + 1)) * (outIndex + 1);
+        const padX = 20;
+        const availableWidth = cardWidth - (padX * 2);
+
+        const outX = parentPos.posX + (outTotal === 1 ? cardWidth / 2 : padX + (availableWidth / (outTotal - 1)) * outIndex);
         const outY = parentPos.posY + cardHeight;
 
-        const inX = childPos.posX + (cardWidth / (inTotal + 1)) * (inIndex + 1);
+        const inX = childPos.posX + (inTotal === 1 ? cardWidth / 2 : padX + (availableWidth / (inTotal - 1)) * inIndex);
         const inY = childPos.posY;
 
-        const deltaY = Math.max(40, Math.abs(inY - outY) / 2);
-        const cp1X = outX;
-        const cp1Y = outY + deltaY;
-        const cp2X = inX;
-        const cp2Y = inY - deltaY;
-
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', `M ${outX} ${outY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${inX} ${inY}`);
+        
+        // Straight line path routing logic
+        if (Math.abs(outX - inX) < 1) {
+          // Pure vertical straight line
+          path.setAttribute('d', `M ${outX} ${outY} L ${inX} ${inY}`);
+        } else {
+          // Orthogonal step-line (vertical -> horizontal -> vertical)
+          const midY = outY + (inY - outY) / 2;
+          path.setAttribute('d', `M ${outX} ${outY} L ${outX} ${midY} L ${inX} ${midY} L ${inX} ${inY}`);
+        }
 
         let strokeColor = '#6366f1';
         let markerUrl = 'url(#arrow)';
         let isDashed = false;
 
-        // Blocked edges (including blocked tasks pointing to the goal) display as amber dashed lines
         if (isBlocked) {
           strokeColor = '#f59e0b';
           markerUrl = 'url(#arrow-locked)';
@@ -352,7 +450,7 @@
     const containerWidth = container ? container.clientWidth : 800;
     const containerHeight = container ? container.clientHeight : 600;
 
-    const maxGraphX = Math.max(containerWidth, maxX + cardWidth + 100);
+    const maxGraphX = Math.max(containerWidth, maxX + cardWidth + 320);
     const maxGraphY = Math.max(containerHeight, maxY + cardHeight + 100);
 
     svg.setAttribute('width', `${maxGraphX}px`);
@@ -360,6 +458,19 @@
     nodesLayer.style.width = `${maxGraphX}px`;
     nodesLayer.style.height = `${maxGraphY}px`;
   }
+
+  // Event Handlers to Dismiss Popover
+  document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('close-graph-popover');
+    if (closeBtn) closeBtn.addEventListener('click', closePopover);
+
+    document.addEventListener('click', (e) => {
+      const popover = document.getElementById('graph-node-popover');
+      if (popover && !popover.contains(e.target) && !e.target.closest('.graph-node')) {
+        closePopover();
+      }
+    });
+  });
 
   window.renderGraphView = renderGraphView;
 })();
