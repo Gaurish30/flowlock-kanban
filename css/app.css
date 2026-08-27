@@ -2446,3 +2446,150 @@ textarea.form-input {
   }
 
 }
+/* ==========================================
+   TASK CARD FOOTER
+   ========================================== */
+
+.task-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  border-top:
+    1px dashed
+    rgba(90, 65, 48, 0.2);
+}
+
+
+.assignee-badge {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+}
+
+
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+
+  max-width: 120px;
+
+  padding: 4px 8px;
+
+  color: #5d3d83;
+  background: #eee4f5;
+
+  border:
+    1px solid
+    #d8c5e7;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.unassigned-pill {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px 8px;
+
+  color: #6f6258;
+  background: #f4efe7;
+
+  border:
+    1px dashed
+    #c9baa8;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* right-side buttons */
+
+.task-card-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+/* Claim */
+
+.btn-claim-task {
+  padding: 5px 9px;
+
+  color: white;
+  background: #d84315;
+
+  border:
+    1px solid
+    #b93510;
+
+  border-radius: 20px;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.btn-claim-task:hover {
+  background: #b93611;
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* Remove */
+
+.btn-remove-task {
+  padding: 5px 9px;
+
+  color: #96382f;
+  background: #fff6f1;
+
+  border:
+    1px solid
+    #e4a59b;
+
+  border-radius: 20px;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    0.18s ease;
+}
+
+
+.btn-remove-task:hover {
+  color: white;
+
+  background: #b93b30;
+
+  border-color: #9e3027;
+
+  transform:
+    translateY(-1px);
+}

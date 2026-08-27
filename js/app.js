@@ -195,6 +195,91 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCurrentBoard();
     showAlert(`✅ You have claimed task "${task.title}"!`);
   }
+  // --- Task Removal Handler ---
+function deleteTask(taskId) {
+  const board = getCurrentBoard();
+  const task = board?.tasks?.find(t => t.id === taskId);
+
+  if (!board || !task) return;
+
+  const isOwner = board.ownerId === currentUser.id;
+  const isAssignee = task.assigneeId === currentUser.id;
+
+  // Only owner or assigned user can remove task
+  if (!isOwner && !isAssignee) {
+    showAlert(
+      `✋ You cannot remove "${task.title}". Only the project owner or assigned user can remove it.`
+    );
+    return;
+  }
+
+  // Final milestone can only be removed by owner
+  if (task.isFinalGoal && !isOwner) {
+    showAlert(
+      '🔒 Only the Project Owner can remove the Final Milestone.'
+    );
+    return;
+  }
+
+  // Find tasks depending on this task
+  const dependentTasks = (board.tasks || []).filter(t =>
+    t.id !== taskId &&
+    Array.isArray(t.dependencies) &&
+    t.dependencies.includes(taskId)
+  );
+
+  let message =
+    `Remove task "${task.title}" (${task.id})?`;
+
+  if (dependentTasks.length > 0) {
+    message +=
+      `\n\nThis task is a dependency of ${dependentTasks.length} task(s).\n` +
+      dependentTasks
+        .map(t => `• ${t.id} — ${t.title}`)
+        .join('\n') +
+      '\n\nIts dependency reference will also be removed.';
+  }
+
+  const confirmed = confirm(message);
+
+  if (!confirmed) return;
+
+  // Remove actual task
+  board.tasks = board.tasks.filter(
+    t => t.id !== taskId
+  );
+
+  // Remove dependency references
+  board.tasks.forEach(t => {
+    if (Array.isArray(t.dependencies)) {
+      t.dependencies =
+        t.dependencies.filter(
+          depId => depId !== taskId
+        );
+    }
+  });
+
+  // Remove task from completion history
+  const updatedHistory =
+    getTaskHistory().filter(log =>
+      !(
+        log.boardId === board.id &&
+        log.taskId === taskId
+      )
+    );
+
+  localStorage.setItem(
+    HISTORY_KEY,
+    JSON.stringify(updatedHistory)
+  );
+
+  saveState();
+  loadCurrentBoard();
+
+  showAlert(
+    `🗑️ Task "${task.title}" removed successfully.`
+  );
+}
 
   // --- Kanban View Renderer ---
   function renderKanban() {
@@ -218,6 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isFinished = task.status === 'done';
       const assignee = allUsers.find(u => u.id === task.assigneeId);
       const isAssignedToMe = task.assigneeId === currentUser.id;
+      const canDeleteTask =board.ownerId === currentUser.id || isAssignedToMe;
 
       const card = document.createElement('div');
       card.className = `task-card ${locked || isFinished ? 'is-locked' : ''} ${task.isFinalGoal ? 'is-milestone' : ''}`;
@@ -248,23 +334,52 @@ document.addEventListener('DOMContentLoaded', () => {
             ${task.dependencies.map(d => `<span class="dep-tag">${task.isFinalGoal ? 'Requires ' + d : 'Blocked by ' + d}</span>`).join('')}
           </div>
         ` : ''}
-        <div class="task-footer" style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
-          <div class="assignee-badge" style="font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px;">
+        <div class="task-footer">
+
+          <div class="assignee-badge">
+
             ${assignee ? `
-              <span class="user-pill" title="Assigned to ${assignee.name}" style="background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-weight: 500;">
+              <span
+                class="user-pill"
+                title="Assigned to ${assignee.name}"
+              >
                 👤 ${isAssignedToMe ? 'Me' : assignee.name}
               </span>
             ` : `
-              <span class="unassigned-pill" style="background: #f3f4f6; color: #6b7280; padding: 2px 6px; border-radius: 4px;">
+              <span class="unassigned-pill">
                 Unassigned
               </span>
             `}
+
           </div>
-          ${!task.assigneeId && !locked && !isFinished ? `
-            <button class="btn-claim-task" data-id="${task.id}" style="font-size: 11px; padding: 3px 8px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
-              ⚡ Claim Task
-            </button>
-          ` : ''}
+
+
+          <div class="task-card-actions">
+
+            ${!task.assigneeId && !locked && !isFinished ? `
+              <button
+                type="button"
+                class="btn-claim-task"
+                data-id="${task.id}"
+              >
+                ⚡ Claim
+              </button>
+            ` : ''}
+
+
+            ${canDeleteTask ? `
+              <button
+                type="button"
+                class="btn-remove-task"
+                data-id="${task.id}"
+                title="Remove Task"
+              >
+                🗑 Remove
+              </button>
+            ` : ''}
+
+          </div>
+
         </div>
       `;
 
@@ -308,6 +423,20 @@ document.addEventListener('DOMContentLoaded', () => {
         claimTask(taskId);
       });
     });
+    document.querySelectorAll('.btn-remove-task')
+   .forEach(btn => {
+    btn.addEventListener('click', (e) => {
+
+      e.stopPropagation();
+
+      const taskId =
+        btn.dataset.id;
+
+      deleteTask(taskId);
+
+    });
+
+  });
 
     ['todo', 'in-progress', 'review', 'done'].forEach(st => {
       const el = document.getElementById(`count-${st}`);
