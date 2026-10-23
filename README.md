@@ -1,3 +1,53 @@
+# Run FlowLock with Express
+
+## Requirements
+- Node.js 18 or newer
+- npm
+
+## Setup
+1. Extract this folder.
+2. Open a terminal in the `flowlock-express` folder.
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the server:
+   ```bash
+   npm start
+   ```
+5. Open **http://localhost:3000** in your browser. Do not open `index.html` directly from File Explorer.
+
+## What was changed
+- Added `server.js`, an Express server that serves the existing HTML, CSS, JavaScript, and image assets.
+- Added `package.json` with the Express and bcrypt dependencies and start scripts.
+- Added `POST /api/auth/register` and `POST /api/auth/login` endpoints.
+- Updated `js/auth.js` to call the Express authentication API instead of saving registered users and plain-text passwords in browser local storage.
+- User records are stored in `data/users.json`; passwords are stored as bcrypt hashes. The database file is created automatically on first start and is excluded from Git.
+
+## API quick test
+Health check:
+```bash
+curl http://localhost:3000/api/health
+```
+
+Register:
+```bash
+curl -X POST http://localhost:3000/api/auth/register ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Demo User\",\"email\":\"demo@example.com\",\"password\":\"password123\"}"
+```
+
+Login:
+```bash
+curl -X POST http://localhost:3000/api/auth/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"email\":\"demo@example.com\",\"password\":\"password123\"}"
+```
+
+## Important scope note
+This is the first Express conversion while preserving the current UI and graph/Kanban behavior. Authentication now uses the Express backend, but project boards, tasks, and task history are still stored in each browser's `localStorage` by the existing frontend scripts. To make the whole app multi-user across browsers/devices, the next step is to add database-backed project/task APIs and update `js/app.js` and `js/projects.js` to use them. The JSON user store is suitable for a class demo, not production deployment; use a database and rate limiting for a production system.
+---
+
 ## 🖼️ Preview
 
 <p align="center">

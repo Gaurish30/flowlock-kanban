@@ -225,461 +225,112 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ==========================================================
-     SIGN IN
+     EXPRESS API AUTHENTICATION
+     User accounts and password hashes are stored by the server.
+     The browser keeps only the active user display/session flag.
      ========================================================== */
 
-  panelLogin?.addEventListener(
-    'submit',
-    (event) => {
-
-      event.preventDefault();
-
-      clearErrors();
-
-
-      const emailInput =
-        document.getElementById(
-          'login-email'
-        );
-
-
-      const passwordInput =
-        document.getElementById(
-          'login-password'
-        );
-
-
-      const emailError =
-        document.getElementById(
-          'login-email-error'
-        );
-
-
-      const passwordError =
-        document.getElementById(
-          'login-password-error'
-        );
-
-
-      const email =
-        emailInput.value.trim();
-
-
-      const password =
-        passwordInput.value;
-
-
-      let isValid = true;
-
-
-      /* ======================================================
-         EMAIL VALIDATION
-         ====================================================== */
-
-      if (
-        !email ||
-        !emailInput.checkValidity()
-      ) {
-
-        emailInput.classList.add(
-          'invalid'
-        );
-
-
-        if (emailError) {
-
-          emailError.textContent =
-            'Please enter a valid email.';
-
-        }
-
-
-        isValid = false;
-
-      }
-
-
-      /* ======================================================
-         PASSWORD VALIDATION
-         ====================================================== */
-
-      if (!password) {
-
-        passwordInput.classList.add(
-          'invalid'
-        );
-
-
-        if (passwordError) {
-
-          passwordError.textContent =
-            'Password is required.';
-
-        }
-
-
-        isValid = false;
-
-      }
-
-
-      if (!isValid) {
-
-        return;
-
-      }
-
-
-      /* ======================================================
-         FIND USER
-         ====================================================== */
-
-      const existingUser =
-        findUserByEmail(email);
-
-
-      if (!existingUser) {
-
-        emailInput.classList.add(
-          'invalid'
-        );
-
-
-        if (emailError) {
-
-          emailError.textContent =
-            'No account found. Please sign up first.';
-
-        }
-
-
-        return;
-
-      }
-
-
-      /* ======================================================
-         CHECK PASSWORD
-         ====================================================== */
-
-      if (
-        existingUser.password !== password
-      ) {
-
-        passwordInput.classList.add(
-          'invalid'
-        );
-
-
-        if (passwordError) {
-
-          passwordError.textContent =
-            'Incorrect password.';
-
-        }
-
-
-        return;
-
-      }
-
-
-      /* ======================================================
-         SAVE ACTIVE SESSION
-         ====================================================== */
-
-      localStorage.setItem(
-        'flowlock_authenticated',
-        'true'
-      );
-
-
-      localStorage.setItem(
-        'flowlock_current_user',
-        JSON.stringify({
-
-          id: existingUser.id,
-
-          name: existingUser.name,
-
-          email: existingUser.email
-
-        })
-      );
-
-
-      /*
-       * IMPORTANT
-       *
-       * Go to landing page after login.
-       *
-       * landing.js will check:
-       *
-       * Does this user have projects?
-       *
-       * YES → Continue Workspace
-       *
-       * NO  → Create New Project
-       */
-
-      window.location.href =
-        'index.html';
-
+  async function submitAuthRequest(endpoint, payload) {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || 'Request failed. Please try again.');
     }
-  );
-
-
-  /* ==========================================================
-     SIGN UP
-     ========================================================== */
-
-  panelRegister?.addEventListener(
-    'submit',
-    (event) => {
-
-      event.preventDefault();
-
-      clearErrors();
-
-
-      const nameInput =
-        document.getElementById(
-          'reg-name'
-        );
-
-
-      const emailInput =
-        document.getElementById(
-          'reg-email'
-        );
-
-
-      const passwordInput =
-        document.getElementById(
-          'reg-password'
-        );
-
-
-      const nameError =
-        document.getElementById(
-          'reg-name-error'
-        );
-
-
-      const emailError =
-        document.getElementById(
-          'reg-email-error'
-        );
-
-
-      const passwordError =
-        document.getElementById(
-          'reg-password-error'
-        );
-
-
-      const name =
-        nameInput.value.trim();
-
-
-      const email =
-        emailInput.value.trim();
-
-
-      const password =
-        passwordInput.value;
-
-
-      let isValid = true;
-
-
-      /* ======================================================
-         NAME VALIDATION
-         ====================================================== */
-
-      if (!name) {
-
-        nameInput.classList.add(
-          'invalid'
-        );
-
-
-        if (nameError) {
-
-          nameError.textContent =
-            'Name is required.';
-
-        }
-
-
-        isValid = false;
-
-      }
-
-
-      /* ======================================================
-         EMAIL VALIDATION
-         ====================================================== */
-
-      if (
-        !email ||
-        !emailInput.checkValidity()
-      ) {
-
-        emailInput.classList.add(
-          'invalid'
-        );
-
-
-        if (emailError) {
-
-          emailError.textContent =
-            'Valid email required.';
-
-        }
-
-
-        isValid = false;
-
-      }
-
-
-      /* ======================================================
-         PASSWORD VALIDATION
-         ====================================================== */
-
-      if (
-        !password ||
-        password.length < 8
-      ) {
-
-        passwordInput.classList.add(
-          'invalid'
-        );
-
-
-        if (passwordError) {
-
-          passwordError.textContent =
-            'Must be at least 8 characters.';
-
-        }
-
-
-        isValid = false;
-
-      }
-
-
-      if (!isValid) {
-
-        return;
-
-      }
-
-
-      /* ======================================================
-         PREVENT DUPLICATE ACCOUNT
-         ====================================================== */
-
-      if (
-        findUserByEmail(email)
-      ) {
-
-        emailInput.classList.add(
-          'invalid'
-        );
-
-
-        if (emailError) {
-
-          emailError.textContent =
-            'Account with this email already exists.';
-
-        }
-
-
-        return;
-
-      }
-
-
-      /* ======================================================
-         CREATE USER OBJECT
-         ====================================================== */
-
-      const userId =
-        `usr_${Date.now()}`;
-
-
-      const newUser = {
-
-        id: userId,
-
-        name: name,
-
-        email: email,
-
-        password: password,
-
-        createdAt:
-          new Date().toISOString()
-
-      };
-
-
-      /* ======================================================
-         SAVE USER
-         ====================================================== */
-
-      saveUserToStorage(
-        newUser
-      );
-
-
-      /* ======================================================
-         SAVE ACTIVE SESSION
-         ====================================================== */
-
-      localStorage.setItem(
-        'flowlock_authenticated',
-        'true'
-      );
-
-
-      localStorage.setItem(
-        'flowlock_current_user',
-        JSON.stringify({
-
-          id: userId,
-
-          name: name,
-
-          email: email
-
-        })
-      );
-
-
-      /*
-       * IMPORTANT:
-       *
-       * We DO NOT create a fake/default project here.
-       *
-       * New user's project list stays empty.
-       */
-
-
-      /* ======================================================
-         RETURN TO LANDING PAGE
-         ====================================================== */
-
-      window.location.href =
-        'index.html';
-
+    return data.user;
+  }
+
+  function showAuthError(input, errorElement, message) {
+    input?.classList.add('invalid');
+    if (errorElement) errorElement.textContent = message;
+  }
+
+  function saveActiveUser(user) {
+    localStorage.setItem('flowlock_authenticated', 'true');
+    localStorage.setItem('flowlock_current_user', JSON.stringify(user));
+  }
+
+  panelLogin?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    clearErrors();
+
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+    const emailError = document.getElementById('login-email-error');
+    const passwordError = document.getElementById('login-password-error');
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !emailInput.checkValidity()) {
+      showAuthError(emailInput, emailError, 'Please enter a valid email.');
+      return;
     }
-  );
+    if (!password) {
+      showAuthError(passwordInput, passwordError, 'Password is required.');
+      return;
+    }
 
+    const submitButton = panelLogin.querySelector('[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    try {
+      const user = await submitAuthRequest('/api/auth/login', { email, password });
+      saveActiveUser(user);
+      window.location.href = 'index.html';
+    } catch (error) {
+      showAuthError(passwordInput, passwordError, error.message);
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+
+  panelRegister?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    clearErrors();
+
+    const nameInput = document.getElementById('reg-name');
+    const emailInput = document.getElementById('reg-email');
+    const passwordInput = document.getElementById('reg-password');
+    const nameError = document.getElementById('reg-name-error');
+    const emailError = document.getElementById('reg-email-error');
+    const passwordError = document.getElementById('reg-password-error');
+
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!name) {
+      showAuthError(nameInput, nameError, 'Name is required.');
+      return;
+    }
+    if (!email || !emailInput.checkValidity()) {
+      showAuthError(emailInput, emailError, 'Valid email required.');
+      return;
+    }
+    if (password.length < 8) {
+      showAuthError(passwordInput, passwordError, 'Must be at least 8 characters.');
+      return;
+    }
+
+    const submitButton = panelRegister.querySelector('[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    try {
+      const user = await submitAuthRequest('/api/auth/register', { name, email, password });
+      saveActiveUser(user);
+      window.location.href = 'index.html';
+    } catch (error) {
+      const message = error.message;
+      if (message.toLowerCase().includes('email')) {
+        showAuthError(emailInput, emailError, message);
+      } else {
+        showAuthError(passwordInput, passwordError, message);
+      }
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
 
   /* ==========================================================
      AUTH ENTRANCE ANIMATION
