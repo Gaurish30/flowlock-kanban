@@ -727,9 +727,16 @@ function deleteTask(taskId) {
   document.getElementById('close-task-modal')?.addEventListener('click', () => modalTask?.classList.add('hidden'));
   document.getElementById('btn-cancel-task')?.addEventListener('click', () => modalTask?.classList.add('hidden'));
 
-  document.getElementById('form-create-task')?.addEventListener('submit', (e) => {
+
+document.getElementById('form-create-task')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const board = getCurrentBoard();
+    if (!board) {
+        alert('No active board found.');
+        return;
+    }
+
     const titleInput = document.getElementById('task-title');
     const descInput = document.getElementById('task-desc');
     const selectedAssignee = assigneeSelect ? assigneeSelect.value : null;
@@ -737,28 +744,70 @@ function deleteTask(taskId) {
     const checkedBoxes = document.querySelectorAll('input[name="dep-task"]:checked');
     const selectedDeps = Array.from(checkedBoxes).map(cb => cb.value);
 
-    const newTask = {
-      id: `FL-${Math.floor(100 + Math.random() * 900)}`,
-      title: titleInput.value.trim(),
-      desc: descInput ? descInput.value.trim() : '',
-      status: 'todo',
-      assigneeId: selectedAssignee || null,
-      dependencies: selectedDeps
-    };
+    const title = titleInput.value.trim();
+    const description = descInput ? descInput.value.trim() : '';
 
-    if (!board.tasks) board.tasks = [];
-    board.tasks.push(newTask);
-
-    const finalGoalTask = board.tasks.find(t => t.isFinalGoal);
-    if (finalGoalTask && !finalGoalTask.dependencies.includes(newTask.id)) {
-      finalGoalTask.dependencies.push(newTask.id);
+    if (!title) {
+        alert('Please enter a task title.');
+        return;
     }
 
-    saveState();
-    modalTask?.classList.add('hidden');
-    document.getElementById('form-create-task')?.reset();
-    loadCurrentBoard();
-  });
+    try {
+        // First, save the task in MongoDB through the Express API.
+        const response = await fetch('/api/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: title,
+                description: description,
+                status: 'todo',
+                priority: 'medium'
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to save task.');
+        }
+
+        // Only update the board after the API confirms success.
+        const savedTask = result.data;
+
+        const newTask = {
+            id: `FL-${Math.floor(100 + Math.random() * 900)}`,
+            mongoId: savedTask._id,
+            title: savedTask.title,
+            desc: savedTask.description,
+            status: savedTask.status,
+            assigneeId: selectedAssignee || null,
+            dependencies: selectedDeps
+        };
+
+        if (!board.tasks) board.tasks = [];
+        board.tasks.push(newTask);
+
+        const finalGoalTask = board.tasks.find(t => t.isFinalGoal);
+        if (
+            finalGoalTask &&
+            !finalGoalTask.dependencies.includes(newTask.id)
+        ) {
+            finalGoalTask.dependencies.push(newTask.id);
+        }
+
+        saveState();
+        document.getElementById('modal-task')?.classList.add('hidden');
+        document.getElementById('form-create-task')?.reset();
+        loadCurrentBoard();
+
+    } catch (error) {
+        console.error('Task creation failed:', error);
+        alert(`Could not save task: ${error.message}`);
+    }
+});
+
 
   // --- Modal: New Project Board ---
   const modalBoard = document.getElementById('modal-board');
