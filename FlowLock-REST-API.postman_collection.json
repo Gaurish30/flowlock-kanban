@@ -1,0 +1,66 @@
+{
+  "info": {
+    "name": "FlowLock REST API (MongoDB Atlas)",
+    "description": "Demo collection for showing FlowLock's Express REST API to your teacher. Run Health, Create Task, List Tasks, Get Task, Update Task, then Delete Task.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "taskId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Health check (verify Atlas connection)",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/health" }
+    },
+    {
+      "name": "2. Register user (use a new email)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Demo Student\",\n  \"email\": \"demo.student@example.com\",\n  \"password\": \"DemoPass123!\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "3. Login user",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"demo.student@example.com\",\n  \"password\": \"DemoPass123!\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "4. Create task (POST)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 201) {", "  const json = pm.response.json();", "  if (json.data && json.data._id) pm.collectionVariables.set('taskId', json.data._id);", "}"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Prepare REST API demo\",\n  \"description\": \"Show CRUD operations backed by MongoDB Atlas\",\n  \"status\": \"todo\",\n  \"priority\": \"high\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/tasks"
+      }
+    },
+    {
+      "name": "5. List tasks (GET)",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/tasks" }
+    },
+    {
+      "name": "6. Get created task (GET by ID)",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/tasks/{{taskId}}" }
+    },
+    {
+      "name": "7. Update task status (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"in-progress\",\n  \"priority\": \"medium\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/api/tasks/{{taskId}}"
+      }
+    },
+    {
+      "name": "8. Delete task (DELETE)",
+      "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/tasks/{{taskId}}" }
+    }
+  ]
+}

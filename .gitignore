@@ -1,5 +1,7 @@
 node_modules/
+.env
 data/users.json
 data/users.json.tmp
-.env
-
+npm-debug.log*
+.DS_Store
+**/package-lock.json
