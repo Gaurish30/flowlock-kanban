@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+// const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+// const User = require('../models/User');
 
 function publicUser(user) {
   return { id: user._id.toString(), name: user.name, email: user.email, createdAt: user.createdAt };
@@ -24,14 +27,34 @@ exports.register = async (req, res, next) => {
   }
 };
 
+
 exports.login = async (req, res, next) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
+
     const user = await User.findOne({ email }).select('+passwordHash');
+
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+      return res.status(401).json({
+        error: 'Invalid email or password.'
+      });
     }
-    return res.json({ message: 'Login successful.', user: publicUser(user) });
-  } catch (error) { next(error); }
+
+    // Generate JWT after successful password verification
+    const token = jwt.sign(
+      { userId: user._id.toString() },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+    );
+
+    return res.status(200).json({
+      message: 'Login successful.',
+      token: token,
+      user: publicUser(user)
+    });
+
+  } catch (error) {
+    next(error);
+  }
 };
