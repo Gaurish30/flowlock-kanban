@@ -4,27 +4,25 @@ const taskSchema = new mongoose.Schema({
   projectId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
-    required: [true, 'Project ID is required.']
+    required: true
   },
   columnId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Column',
-    required: [true, 'Column ID is required.']
+    required: true
   },
   title: {
     type: String,
-    required: [true, 'Task title is required.'],
-    trim: true,
-    maxlength: 150
+    required: true,
+    trim: true
   },
   description: {
     type: String,
-    trim: true,
-    maxlength: 1000
+    trim: true
   },
   priority: {
     type: String,
-    enum: ['low', 'medium', 'high', 'urgent'],
+    enum: ['low', 'medium', 'high'],
     default: 'medium'
   },
   dueDate: {
@@ -38,7 +36,11 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  }
+  },
+  dependencies: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task'
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Task', taskSchema);
