@@ -12,4 +12,7 @@ router.post('/', projectController.createProject);
 // GET /api/projects - Get all projects for the logged-in user
 router.get('/', projectController.getProjects);
 
+// DELETE /api/projects/:projectId - Delete a project by ID
+router.delete('/:projectId', projectController.deleteProject);
+
 module.exports = router;

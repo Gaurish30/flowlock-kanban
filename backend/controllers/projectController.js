@@ -1,5 +1,6 @@
 const Project = require('../models/Project');
-const Column = require('../models/Column'); // <-- Make sure Column model is imported
+const Column = require('../models/Column');
+const Task = require('../models/Task');
 
 // Create a new project and automatically generate default columns
 const createProject = async (req, res) => {
@@ -56,7 +57,33 @@ const getProjects = async (req, res) => {
   }
 };
 
+// Delete a project and its associated columns and tasks
+const deleteProject = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    // Only allow the project owner to delete the project
+    const project = await Project.findOneAndDelete({
+      _id: projectId,
+      owner: req.userId
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found or unauthorized to delete.' });
+    }
+
+    // Delete all columns and tasks associated with this project
+    await Column.deleteMany({ projectId });
+    await Task.deleteMany({ projectId });
+
+    res.status(200).json({ message: 'Project deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error while deleting project.', details: error.message });
+  }
+};
+
 module.exports = {
   createProject,
-  getProjects
+  getProjects,
+  deleteProject
 };
