@@ -1,60 +1,76 @@
-const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-// const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-// const User = require('../models/User');
 
-function publicUser(user) {
-  return { id: user._id.toString(), name: user.name, email: user.email, createdAt: user.createdAt };
-}
-
-exports.register = async (req, res, next) => {
+// Register a new user
+const register = async (req, res) => {
   try {
-    const name = String(req.body.name || '').trim();
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const password = String(req.body.password || '');
-    if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'Enter a name and a valid email address.' });
+    const { name, email, password } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already registered.' });
     }
-    if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
-    const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, passwordHash });
-    return res.status(201).json({ message: 'User registered successfully.', user: publicUser(user) });
+
+    // Hash password
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Create new user
+    const newUser = new User({
+      name,
+      email,
+      passwordHash
+    });
+
+    await newUser.save();
+
+    res.status(201).json({ message: 'User registered successfully.' });
   } catch (error) {
-    if (error.code === 11000) return res.status(409).json({ error: 'An account with this email already exists.' });
-    if (error.name === 'ValidationError') return res.status(400).json({ error: error.message });
-    next(error);
+    res.status(500).json({ error: 'Server error during registration.', details: error.message });
   }
 };
 
-
-exports.login = async (req, res, next) => {
+// Login user and return JWT
+const login = async (req, res) => {
   try {
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const password = String(req.body.password || '');
+    const { email, password } = req.body;
 
+    // Find user and explicitly select passwordHash
     const user = await User.findOne({ email }).select('+passwordHash');
-
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      return res.status(401).json({
-        error: 'Invalid email or password.'
-      });
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid email or password.' });
     }
 
-    // Generate JWT after successful password verification
+    // Check password validity
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: 'Invalid email or password.' });
+    }
+
+    // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id.toString() },
+      { userId: user._id },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
     );
 
-    return res.status(200).json({
-      message: 'Login successful.',
-      token: token,
-      user: publicUser(user)
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
     });
-
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: 'Server error during login.', details: error.message });
   }
+};
+
+module.exports = {
+  register,
+  login
 };

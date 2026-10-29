@@ -1,37 +1,41 @@
-require('dotenv').config();
-const express = require('express');
 const path = require('path');
+// Explicitly look for .env in the current directory (backend folder)
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+const express = require('express');
 const mongoose = require('mongoose');
-const authRoutes = require('./routes/authRoutes');
-const taskRoutes = require('./routes/taskRoutes');
+const cors = require('cors');
+
+// Debug check: This will print your URI or 'undefined' so you know immediately
+console.log("MONGODB_URI check:", process.env.MONGODB_URI);
+
+const authRoutes = require('./routes/auth');
+const verifyToken = require('./middleware/auth');
+const projectRoutes = require('./routes/projects'); 
+const columnRoutes = require('./routes/columns'); 
+const taskRoutes = require('./routes/tasks');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true }));
 
-app.get('/api/health', (_req, res) => {
-  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
-  res.json({ status: 'ok', app: 'FlowLock Express API', database: states[mongoose.connection.readyState] || 'unknown' });
-});
+app.use(express.json());
+app.use(cors());
+
+// Connect to MongoDB Atlas
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB Atlas (BE2)'))
+  .catch((err) => console.error('MongoDB connection error:', err));
+
 app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/columns', columnRoutes); 
 app.use('/api/tasks', taskRoutes);
 
-// Serve the static frontend from the sibling frontend directory.
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
-app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html')));
-
-app.use((err, _req, res, _next) => {
-  console.error('API error:', err.message);
-  if (err.name === 'ValidationError' || err.name === 'CastError') return res.status(400).json({ error: err.message });
-  if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: 'Database is not connected. Check MONGODB_URI and Atlas network access.' });
-  res.status(500).json({ error: 'An unexpected server error occurred.' });
+app.get('/api/protected-test', verifyToken, (req, res) => {
+  res.json({ message: 'You have successfully accessed a protected route!', userId: req.userId });
 });
 
-async function start() {
-  if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is missing. Copy .env.example to .env and configure Atlas.');
-  await mongoose.connect(process.env.MONGODB_URI);
-  console.log(`MongoDB connected: ${mongoose.connection.name}`);
-  app.listen(PORT, () => console.log(`FlowLock running at http://localhost:${PORT}`));
-}
-start().catch((error) => { console.error('Server startup failed:', error.message); process.exit(1); });
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
